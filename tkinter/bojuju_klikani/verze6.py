@@ -1,0 +1,747 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+import math
+import datetime
+from pathlib import Path
+from typing import List
+
+from PySide6.QtCore import Qt, QSize, Signal, Slot, QTimer, QThreadPool, QRunnable, QMetaObject, Q_ARG
+from PySide6.QtGui import QPixmap, QImage, QAction
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
+    QScrollArea, QListWidget, QListWidgetItem, QLabel, QPushButton, QDoubleSpinBox,
+    QFileDialog, QMessageBox, QLineEdit, QTextEdit, QComboBox, QCheckBox, QGroupBox,
+    QSplitter
+)
+
+from PIL import Image, ImageDraw, ImageFont
+from PIL.ImageQt import ImageQt
+
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas as pdfcanvas
+from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.utils import ImageReader
+from reportlab.lib.colors import HexColor
+
+# --------------------------------------------------------------------------------------
+# Konfigurace / konstanty
+# --------------------------------------------------------------------------------------
+
+APP_TITLE = "Tvorba cenové nabídky (PySide6, ClickableImage základ)"
+SEGMENT_POOL_DIR = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/pool/segmenty")
+SEGMENTS_PER_PAGE_FIXED = 4
+
+MARGIN_CM = 2.0
+GAP_CM = 0.5
+PRICE_TOP_OFFSET_CM = 2
+A4_W_PT, A4_H_PT = A4
+
+# Titulní strana
+COVER_TITLE_COLOR_HEX = "#2E6F82"
+COVER_LINE_THICKNESS_PT = 1
+COVER_SIDE_MARGIN_CM = 1.2
+COVER_BAND_TOP_CM = 4.5
+COVER_BAND_BOTTOM_CM = 5.7
+COVER_TITLE_SIZE_PT = 40
+COVER_INFO_BLOCK_LEFT_CM = 1.5
+COVER_INFO_BLOCK_BOTTOM_CM = 2.0
+COVER_INFO_SIZE_PT = 12
+
+def czech_date(d=None):
+    if d is None:
+        d = datetime.date.today()
+    return d.strftime("%-d. %-m. %Y") if sys.platform != "win32" else d.strftime("%#d. %#m. %Y")
+
+def english_date_upper(d=None):
+    if d is None:
+        d = datetime.date.today()
+    return d.strftime("%B %d, %Y").upper()
+
+def try_register_font():
+    ttf_path = Path(__file__).with_name("DejaVuSans.ttf")
+    if ttf_path.exists():
+        try:
+            pdfmetrics.registerFont(TTFont("DejaVuSans", str(ttf_path)))
+            return "DejaVuSans", str(ttf_path)
+        except Exception:
+            pass
+    return "Helvetica", None
+
+FONT_NAME, PREVIEW_TTF = try_register_font()
+
+# --------------------------------------------------------------------------------------
+# ClickableImage – převzato z tvé ukázky (s minimálními změnami)
+# --------------------------------------------------------------------------------------
+
+class ClickableImage(QWidget):
+    """Widget s obrázkem, který lze klikatelně označovat (toggle).
+    - škáluje pixmapu na cílovou šířku
+    - při označení vykreslí červený rámeček (QSS)
+    - emituje signál toggled(path, is_selected)
+    """
+
+    toggled = Signal(str, bool)
+
+    def __init__(self, image_path: Path, target_width: int) -> None:
+        super().__init__()
+        self.setObjectName("imageFrame")  # pro QSS selektor
+        self.setProperty("selected", False)
+        
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setStyleSheet(
+            """
+            QWidget#imageFrame {
+                border: 3px solid transparent;
+                border-radius: 8px;
+                background: white;
+            }
+            QWidget#imageFrame[selected="true"] {
+                border-color: red;
+            }
+            """
+        )
+
+        self._image_path = Path(image_path)
+        self._original = QPixmap(str(self._image_path))
+        if self._original.isNull():
+            raise ValueError(f"Nepodařilo se načíst obrázek: {self._image_path}")
+
+        self._label = QLabel(alignment=Qt.AlignCenter)
+        self._label.setObjectName("imageLabel")
+        self._label.setMinimumSize(QSize(1, 1))
+        self._label.setScaledContents(False)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(6, 6, 6, 6)
+        lay.setSpacing(0)
+        lay.addWidget(self._label)
+
+        self.set_target_width(target_width)
+
+    @property
+    def image_path(self) -> Path:
+        return self._image_path
+
+    @property
+    def is_selected(self) -> bool:
+        return bool(self.property("selected"))
+
+    def set_selected(self, value: bool) -> None:
+        if bool(self.property("selected")) == bool(value):
+            return
+        self.setProperty("selected", bool(value))
+        # Refresh stylu (dynamická property)
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.update()
+
+    def set_target_width(self, width: int) -> None:
+        width = max(1, int(width))
+        scaled = self._original.scaledToWidth(width, Qt.SmoothTransformation)
+        self._label.setPixmap(scaled)
+        self._label.setFixedSize(scaled.size())
+
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            new_state = not self.is_selected
+            self.set_selected(new_state)
+            self.toggled.emit(str(self._image_path), new_state)
+        super().mousePressEvent(event)
+
+# --------------------------------------------------------------------------------------
+# Pracovní vlákna (náhledové stránky)
+# --------------------------------------------------------------------------------------
+
+class PreviewWorker(QRunnable):
+    """Staví PIL náhledové stránky na pozadí a předá list PIL.Image zpět do GUI vlákna."""
+    def __init__(self, order_paths: List[str], margin_cm: float, gap_cm: float,
+                 price_path: str, title: str, info_text: str,
+                 date_style: str, use_today: bool, receiver: object, slot_name: str,
+                 width_px: int = 900):
+        super().__init__()
+        self.order_paths = order_paths
+        self.margin_cm = margin_cm
+        self.gap_cm = gap_cm
+        self.price_path = price_path
+        self.title = title
+        self.info_text = info_text
+        self.date_style = date_style
+        self.use_today = use_today
+        self.receiver = receiver
+        self.slot_name = slot_name
+        self.width_px = width_px
+
+    def run(self):
+        pages = []
+        pages.append(self._render_cover_preview_pil())
+        spp = SEGMENTS_PER_PAGE_FIXED
+        n = len(self.order_paths)
+        total_comp_pages = math.ceil(n / spp) if n > 0 else 0
+        for p in range(total_comp_pages):
+            paths = self.order_paths[p*spp:(p+1)*spp]
+            pages.append(self._render_components_preview_pil(paths))
+        pages.append(self._render_price_preview_pil())
+
+        QMetaObject.invokeMethod(
+            self.receiver, self.slot_name, Qt.QueuedConnection, Q_ARG(object, pages)
+        )
+
+    def _blank_a4(self):
+        ratio = A4_H_PT / A4_W_PT
+        w = self.width_px
+        h = int(w * ratio)
+        return Image.new("RGB", (w, h), "white")
+
+    def _render_cover_preview_pil(self):
+        img = self._blank_a4()
+        draw = ImageDraw.Draw(img)
+        W, H = img.size
+        col = tuple(int(COVER_TITLE_COLOR_HEX[i:i+2], 16) for i in (1,3,5))
+
+        left = int(COVER_SIDE_MARGIN_CM * (W / (A4_W_PT / cm)))
+        right = W - left
+        y_top = int(COVER_BAND_TOP_CM * (H / (A4_H_PT / cm)))
+        y_bot = int(COVER_BAND_BOTTOM_CM * (H / (A4_H_PT / cm)))
+        draw.line([(left, y_top), (right, y_top)], fill=col, width=max(1, COVER_LINE_THICKNESS_PT//2 or 1))
+        draw.line([(left, y_bot), (right, y_bot)], fill=col, width=max(1, COVER_LINE_THICKNESS_PT//2 or 1))
+
+        try:
+            font = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", COVER_TITLE_SIZE_PT)
+        except Exception:
+            font = ImageFont.load_default()
+        title = (self.title.strip() or "CENOVÁ NABÍDKA").upper()
+        th = ImageDraw.Draw(Image.new("RGB",(1,1))).textbbox((0,0), title, font=font)[3]
+        y_text = (y_top + y_bot - th) // 2
+        draw.text((left, y_text), title, fill=col, font=font)
+
+        try:
+            info_font = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", COVER_INFO_SIZE_PT)
+        except Exception:
+            info_font = ImageFont.load_default()
+        info_left = int(COVER_INFO_BLOCK_LEFT_CM * (W / (A4_W_PT / cm)))
+        info_bottom = int(COVER_INFO_BLOCK_BOTTOM_CM * (H / (A4_H_PT / cm)))
+        if self.use_today:
+            date_str = english_date_upper() if self.date_style == "EN" else czech_date()
+            draw.text((info_left, H - info_bottom - COVER_INFO_SIZE_PT*2), date_str, fill=col, font=info_font)
+            y_start = H - info_bottom - COVER_INFO_SIZE_PT
+        else:
+            y_start = H - info_bottom
+        for i, line in enumerate((self.info_text or "").splitlines()):
+            draw.text((info_left, y_start + i*(COVER_INFO_SIZE_PT+4)), line, fill=col, font=info_font)
+        return img
+
+    def _render_components_preview_pil(self, paths: List[str]):
+        img = self._blank_a4()
+        draw = ImageDraw.Draw(img)
+        W, H = img.size
+        margin_px = int(self.margin_cm * (W / (A4_W_PT / cm)))
+        gap_px = int(self.gap_cm * (W / (A4_W_PT / cm)))
+        usable_w = W - 2*margin_px
+        usable_h = H - 2*margin_px
+        total_gap = gap_px * max(0, SEGMENTS_PER_PAGE_FIXED-1)
+        max_item_h = max(10, (usable_h - total_gap) // SEGMENTS_PER_PAGE_FIXED)
+        y = margin_px
+        for p in paths:
+            try:
+                im = Image.open(p).convert("RGB")
+            except Exception:
+                im = Image.new("RGB", (2839, 1004), "lightgray")
+            w0, h0 = im.size
+            scale = min(usable_w / w0, max_item_h / h0)
+            nw, nh = max(1, int(w0*scale)), max(1, int(h0*scale))
+            im2 = im.resize((nw, nh), Image.BILINEAR)
+            x = margin_px + (usable_w - nw)//2
+            img.paste(im2, (x, y))
+            y += nh + gap_px
+        draw.rectangle([0,0,W-1,H-1], outline="#dddddd")
+        return img
+
+    def _render_price_preview_pil(self):
+        img = self._blank_a4()
+        draw = ImageDraw.Draw(img)
+        W, H = img.size
+        top_offset_px = int(PRICE_TOP_OFFSET_CM * (H / (A4_H_PT / cm)))
+        margin_px = int(self.margin_cm * (W / (A4_W_PT / cm)))
+        max_w = W - 2*margin_px
+        max_h = H - top_offset_px - margin_px
+        if self.price_path and os.path.exists(self.price_path):
+            try:
+                im = Image.open(self.price_path).convert("RGB")
+            except Exception:
+                im = Image.new("RGB", (1200,800), "lightgray")
+        else:
+            im = Image.new("RGB", (1200,800), "white")
+            pd = ImageDraw.Draw(im)
+            try:
+                font = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", 36)
+            except Exception:
+                font = ImageFont.load_default()
+            text = "Cenová tabulka (obrázek nenahrán)"
+            tw, th = pd.textbbox((0,0), text, font=font)[2:4]
+            pd.text(((1200-tw)//2, (800-th)//2), text, fill="black", font=font)
+        w0, h0 = im.size
+        scale = min(max_w / w0, max_h / h0, 1.0)
+        nw, nh = int(w0*scale), int(h0*scale)
+        im2 = im.resize((nw, nh), Image.BILINEAR)
+        x = (W - nw)//2
+        y = top_offset_px
+        img.paste(im2, (x, y))
+        draw.rectangle([0,0,W-1,H-1], outline="#dddddd")
+        return img
+
+# --------------------------------------------------------------------------------------
+# Hlavní okno
+# --------------------------------------------------------------------------------------
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle(APP_TITLE)
+        self.resize(1280, 860)
+
+        # Stav
+        self.margin_cm = MARGIN_CM
+        self.gap_cm = GAP_CM
+        self.price_image_path = ""
+        self.pool = QThreadPool.globalInstance()
+        self.preview_pages = []  # list PIL.Image
+
+        # Debounce timer pro náhled
+        self._preview_timer = QTimer(self)
+        self._preview_timer.setSingleShot(True)
+        self._preview_timer.setInterval(140)
+        self._preview_timer.timeout.connect(self.build_preview_async)
+
+        # ---------------------------- UI layout ---------------------------- #
+        # Horní panel
+        top_bar = QWidget()
+        lay_top = QHBoxLayout(top_bar)
+        btn_load = QPushButton("Načíst složku se segmenty (PNG)")
+        btn_price = QPushButton("Načíst obrázek cenové tabulky")
+        btn_pdf = QPushButton("Export PDF…")
+        lay_top.addWidget(btn_load)
+        lay_top.addWidget(btn_price)
+        lay_top.addStretch()
+        lay_top.addWidget(QLabel("Okraj (cm):"))
+        self.spin_margin = QDoubleSpinBox(); self.spin_margin.setRange(0,5); self.spin_margin.setSingleStep(0.5); self.spin_margin.setValue(self.margin_cm)
+        lay_top.addWidget(self.spin_margin)
+        lay_top.addWidget(QLabel("Mezera (cm):"))
+        self.spin_gap = QDoubleSpinBox(); self.spin_gap.setRange(0,3); self.spin_gap.setSingleStep(0.5); self.spin_gap.setValue(self.gap_cm)
+        lay_top.addWidget(self.spin_gap)
+        lay_top.addWidget(btn_pdf)
+
+        # Titulní strana
+        cover_box = QGroupBox("Titulní strana")
+        lay_cover = QGridLayout(cover_box)
+        self.edit_title = QLineEdit("CENOVÁ NABÍDKA SIMULÁTORU")
+        self.edit_info = QTextEdit()
+        self.edit_info.setPlainText("Jiří Doležal\nNad Hrádkem 284\n25226 Kosoř")
+        self.combo_date = QComboBox(); self.combo_date.addItems(["EN","CZ"]); self.combo_date.setCurrentText("EN")
+        self.chk_today = QCheckBox("Použít dnešní datum"); self.chk_today.setChecked(True)
+        lay_cover.addWidget(QLabel("Nadpis:"), 0, 0)
+        lay_cover.addWidget(self.edit_title, 0, 1, 1, 3)
+        lay_cover.addWidget(QLabel("Blok adresy (multi-řádek):"), 1, 0)
+        lay_cover.addWidget(self.edit_info, 1, 1, 1, 3)
+        lay_cover.addWidget(QLabel("Datum:"), 0, 4)
+        lay_cover.addWidget(self.combo_date, 0, 5)
+        lay_cover.addWidget(self.chk_today, 0, 6)
+
+        # Levý panel: tvoje galerie ClickableImage (scroll)
+        self.gallery_scroll = QScrollArea()
+        self.gallery_scroll.setWidgetResizable(True)
+        self.gallery_scroll.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.gallery_content = QWidget()
+        self.gallery_vbox = QVBoxLayout(self.gallery_content)
+        self.gallery_vbox.setContentsMargins(12, 12, 12, 12)
+        self.gallery_vbox.setSpacing(12)
+        self.gallery_scroll.setWidget(self.gallery_content)
+
+        self._items: list[ClickableImage] = []
+        self._item_by_path: dict[str, ClickableImage] = {}
+
+        left_box = QWidget(); left_lay = QVBoxLayout(left_box)
+        left_lay.addWidget(QLabel("Galerie segmentů"))
+        left_lay.addWidget(self.gallery_scroll)
+
+        # Střední panel: pořadí
+        mid_box = QWidget(); lay_mid = QVBoxLayout(mid_box)
+        lay_mid.addWidget(QLabel("Vybrané (pořadí) – 4/stranu"))
+        self.order_list = QListWidget()
+        lay_mid.addWidget(self.order_list)
+        row_btns = QHBoxLayout()
+        btn_up = QPushButton("Nahoru"); btn_dn = QPushButton("Dolů"); btn_rm = QPushButton("Odebrat")
+        row_btns.addWidget(btn_up); row_btns.addWidget(btn_dn); row_btns.addWidget(btn_rm)
+        lay_mid.addLayout(row_btns)
+        row_btns2 = QHBoxLayout()
+        btn_all = QPushButton("Vybrat vše"); btn_clr = QPushButton("Zrušit výběr")
+        row_btns2.addWidget(btn_all); row_btns2.addWidget(btn_clr)
+        lay_mid.addLayout(row_btns2)
+
+        # Pravý panel: náhled
+        right_box = QWidget(); lay_right = QVBoxLayout(right_box)
+        top_preview = QHBoxLayout(); top_preview.addWidget(QLabel("Stránka:"))
+        self.page_combo = QComboBox(); self.page_combo.addItem("1")
+        top_preview.addWidget(self.page_combo); top_preview.addStretch()
+        lay_right.addLayout(top_preview)
+        self.preview_label = QLabel(alignment=Qt.AlignCenter)
+        self.preview_label.setMinimumSize(400, 400)
+        lay_right.addWidget(self.preview_label)
+
+        # Splitter
+        splitter = QSplitter()
+        splitter.addWidget(left_box)
+        splitter.addWidget(mid_box)
+        splitter.addWidget(right_box)
+        splitter.setSizes([450, 280, 600])
+
+        # Central widget
+        central = QWidget()
+        v = QVBoxLayout(central)
+        v.addWidget(top_bar)
+        v.addWidget(cover_box)
+        v.addWidget(splitter)
+        self.setCentralWidget(central)
+
+        # Menu (volitelně)
+        self._make_menu()
+
+        # Signály
+        btn_load.clicked.connect(self.load_segments_dialog)
+        btn_price.clicked.connect(self.load_price_image)
+        btn_pdf.clicked.connect(self.export_pdf)
+
+        btn_up.clicked.connect(self.move_up)
+        btn_dn.clicked.connect(self.move_down)
+        btn_rm.clicked.connect(self.remove_from_order)
+
+        btn_all.clicked.connect(self.select_all)
+        btn_clr.clicked.connect(self.clear_selection)
+
+        self.page_combo.currentIndexChanged.connect(self.show_preview_page)
+        self.spin_margin.valueChanged.connect(self.schedule_preview)
+        self.spin_gap.valueChanged.connect(self.schedule_preview)
+        self.edit_title.textChanged.connect(self.schedule_preview)
+        self.edit_info.textChanged.connect(self.schedule_preview)
+        self.combo_date.currentTextChanged.connect(self.schedule_preview)
+        self.chk_today.toggled.connect(self.schedule_preview)
+
+        # Přednačtení
+        if SEGMENT_POOL_DIR.exists():
+            self.load_segments_dir(SEGMENT_POOL_DIR)
+
+    # ----------------------------------------------------------------------------------
+    # Menu
+    # ----------------------------------------------------------------------------------
+    def _make_menu(self):
+        m = self.menuBar().addMenu("Soubor")
+        act_open = QAction("Načíst složku…", self); act_open.triggered.connect(self.load_segments_dialog)
+        act_price = QAction("Načíst ceníkový obrázek…", self); act_price.triggered.connect(self.load_price_image)
+        act_pdf = QAction("Export PDF…", self); act_pdf.triggered.connect(self.export_pdf)
+        m.addAction(act_open); m.addAction(act_price); m.addSeparator(); m.addAction(act_pdf)
+
+    # ----------------------------------------------------------------------------------
+    # Galerie – načítání
+    # ----------------------------------------------------------------------------------
+    def load_segments_dialog(self):
+        d = QFileDialog.getExistingDirectory(self, "Vyber složku se segmenty (PNG)")
+        if d:
+            self.load_segments_dir(Path(d))
+
+    def load_segments_dir(self, directory: Path):
+        # vyčisti staré widgety
+        for w in self._items:
+            w.setParent(None)
+        self._items.clear()
+        self._item_by_path.clear()
+        self.order_list.clear()
+
+        if not directory.exists() or not directory.is_dir():
+            QMessageBox.critical(self, "Chyba", f"Adresář neexistuje:\n{directory}")
+            return
+
+        pngs = sorted(p for p in directory.iterdir() if p.suffix.lower() == ".png")
+        if not pngs:
+            QMessageBox.information(self, "Info", f"Žádné PNG v:\n{directory}")
+            return
+
+        tgt = self._current_target_width()
+        for p in pngs:
+            try:
+                item = ClickableImage(p, tgt)
+            except Exception as e:
+                print(f"Přeskakuji '{p.name}': {e}")
+                continue
+            item.toggled.connect(self.on_image_toggled)
+            self.gallery_vbox.addWidget(item, alignment=Qt.AlignHCenter)
+            self._items.append(item)
+            self._item_by_path[str(p)] = item
+
+        # pružný spacer
+        spacer = QWidget(); spacer.setFixedHeight(1)
+        self.gallery_vbox.addWidget(spacer)
+
+        self.schedule_preview()
+
+    def _current_target_width(self) -> int:
+        viewport = self.gallery_scroll.viewport()
+        if viewport is None:
+            return 1000
+        return max(300, viewport.width() - 36)
+
+    def _update_all_widths(self) -> None:
+        w = self._current_target_width()
+        for item in self._items:
+            item.set_target_width(w)
+
+    # ----------------------------------------------------------------------------------
+    # Klikání v galerii
+    # ----------------------------------------------------------------------------------
+    @Slot(str, bool)
+    def on_image_toggled(self, path: str, is_selected: bool):
+        if is_selected:
+            if not self._order_contains(path):
+                li = QListWidgetItem(Path(path).name)
+                li.setData(Qt.UserRole, path)
+                self.order_list.addItem(li)
+        else:
+            self._order_remove_by_path(path)
+        self.schedule_preview()
+
+    def _order_contains(self, path: str) -> bool:
+        for i in range(self.order_list.count()):
+            if self.order_list.item(i).data(Qt.UserRole) == path:
+                return True
+        return False
+
+    def _order_remove_by_path(self, path: str):
+        i = 0
+        while i < self.order_list.count():
+            if self.order_list.item(i).data(Qt.UserRole) == path:
+                self.order_list.takeItem(i)
+                return
+            i += 1
+
+    # ----------------------------------------------------------------------------------
+    # Výběrové operace
+    # ----------------------------------------------------------------------------------
+    def select_all(self):
+        for it in self._items:
+            if not it.is_selected:
+                it.set_selected(True)
+                p = str(it.image_path)
+                if not self._order_contains(p):
+                    li = QListWidgetItem(it.image_path.name)
+                    li.setData(Qt.UserRole, p)
+                    self.order_list.addItem(li)
+        self.schedule_preview()
+
+    def clear_selection(self):
+        for it in self._items:
+            if it.is_selected:
+                it.set_selected(False)
+        self.order_list.clear()
+        self.schedule_preview()
+
+    def move_up(self):
+        row = self.order_list.currentRow()
+        if row <= 0: return
+        it = self.order_list.takeItem(row)
+        self.order_list.insertItem(row-1, it)
+        self.order_list.setCurrentRow(row-1)
+        self.schedule_preview()
+
+    def move_down(self):
+        row = self.order_list.currentRow()
+        if row < 0 or row >= self.order_list.count()-1: return
+        it = self.order_list.takeItem(row)
+        self.order_list.insertItem(row+1, it)
+        self.order_list.setCurrentRow(row+1)
+        self.schedule_preview()
+
+    def remove_from_order(self):
+        row = self.order_list.currentRow()
+        if row < 0: return
+        p = self.order_list.item(row).data(Qt.UserRole)
+        self.order_list.takeItem(row)
+        # zruš označení i v galerii
+        w = self._item_by_path.get(p)
+        if w and w.is_selected:
+            w.set_selected(False)
+        self.schedule_preview()
+
+    # ----------------------------------------------------------------------------------
+    # Náhled (debounce + worker)
+    # ----------------------------------------------------------------------------------
+    def schedule_preview(self):
+        self._preview_timer.start()
+
+    def _order_paths(self) -> List[str]:
+        return [self.order_list.item(i).data(Qt.UserRole) for i in range(self.order_list.count())]
+
+    def build_preview_async(self):
+        worker = PreviewWorker(
+            order_paths=self._order_paths(),
+            margin_cm=float(self.spin_margin.value()),
+            gap_cm=float(self.spin_gap.value()),
+            price_path=self.price_image_path,
+            title=self.edit_title.text(),
+            info_text=self.edit_info.toPlainText(),
+            date_style=self.combo_date.currentText(),
+            use_today=self.chk_today.isChecked(),
+            receiver=self,
+            slot_name="accept_preview_pages",
+            width_px=900
+        )
+        self.pool.start(worker)
+
+    @Slot(object)
+    def accept_preview_pages(self, pages):
+        self.preview_pages = pages  # list PIL.Image
+        self.page_combo.blockSignals(True)
+        self.page_combo.clear()
+        self.page_combo.addItems([str(i+1) for i in range(len(pages))])
+        self.page_combo.setCurrentIndex(0)
+        self.page_combo.blockSignals(False)
+        self.show_preview_page()
+
+    def show_preview_page(self):
+        if not self.preview_pages:
+            self.preview_label.clear()
+            return
+        idx = max(0, self.page_combo.currentIndex())
+        pil_img = self.preview_pages[idx]
+        qimg = QImage(ImageQt(pil_img.convert("RGBA")))
+        pm = QPixmap.fromImage(qimg)
+        pm_scaled = pm.scaled(self.preview_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.preview_label.setPixmap(pm_scaled)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        self._update_all_widths()
+        self.show_preview_page()
+
+    # ----------------------------------------------------------------------------------
+    # Ceníkový obrázek
+    # ----------------------------------------------------------------------------------
+    def load_price_image(self):
+        p, _ = QFileDialog.getOpenFileName(self, "Vyber obrázek s cenovou tabulkou",
+                                           "", "Obrázky (*.png *.jpg *.jpeg *.webp *.tif *.tiff)")
+        if p:
+            self.price_image_path = p
+            self.schedule_preview()
+
+    # ----------------------------------------------------------------------------------
+    # Export PDF
+    # ----------------------------------------------------------------------------------
+    def export_pdf(self):
+        out, _ = QFileDialog.getSaveFileName(self, "Uložit PDF", "", "PDF (*.pdf)")
+        if not out:
+            return
+        try:
+            self._make_pdf(out)
+            QMessageBox.information(self, "Hotovo", f"PDF bylo vytvořeno:\n{out}")
+        except Exception as e:
+            QMessageBox.critical(self, "Chyba", f"Nepodařilo se vytvořit PDF:\n{e}")
+
+    def _make_pdf(self, out_path):
+        c = pdfcanvas.Canvas(out_path, pagesize=A4)
+        W, H = A4_W_PT, A4_H_PT
+        margin = float(self.spin_margin.value()) * cm
+        gap = float(self.spin_gap.value()) * cm
+
+        # Titulní strana
+        col = HexColor(COVER_TITLE_COLOR_HEX)
+        left = COVER_SIDE_MARGIN_CM * cm
+        right = W - left
+        y_top = H - (COVER_BAND_TOP_CM * cm)
+        y_bot = H - (COVER_BAND_BOTTOM_CM * cm)
+        c.setStrokeColor(col); c.setLineWidth(COVER_LINE_THICKNESS_PT)
+        c.line(left, y_top, right, y_top); c.line(left, y_bot, right, y_bot)
+
+        title = (self.edit_title.text().strip() or "CENOVÁ NABÍDKA").upper()
+        c.setFillColor(col); t = c.beginText()
+        t.setTextOrigin(left, (y_top + y_bot)/2 - (COVER_TITLE_SIZE_PT*0.35))
+        t.setFont(FONT_NAME, COVER_TITLE_SIZE_PT)
+        try: t.setCharSpace(1.2)
+        except Exception: pass
+        t.textLine(title); c.drawText(t)
+
+        info_x = COVER_INFO_BLOCK_LEFT_CM * cm
+        info_y_base = COVER_INFO_BLOCK_BOTTOM_CM * cm
+        c.setFont(FONT_NAME, COVER_INFO_SIZE_PT)
+        if self.chk_today.isChecked():
+            date_str = english_date_upper() if self.combo_date.currentText()=="EN" else czech_date()
+            c.drawString(info_x, info_y_base + 3*(COVER_INFO_SIZE_PT+2), date_str)
+            start_y = info_y_base + 2*(COVER_INFO_SIZE_PT+2)
+        else:
+            start_y = info_y_base
+        for i, line in enumerate(self.edit_info.toPlainText().splitlines()):
+            c.drawString(info_x, start_y + i*(COVER_INFO_SIZE_PT+2), line)
+
+        c.showPage()
+
+        # Komponenty 4/stranu
+        order_paths = self._order_paths()
+        n = len(order_paths); spp = SEGMENTS_PER_PAGE_FIXED
+        if n > 0:
+            total_pages = math.ceil(n / spp)
+            usable_w = W - 2*margin
+            usable_h = H - 2*margin
+            total_gap = gap * max(0, spp-1)
+            max_item_h = max(10, (usable_h - total_gap) / spp)
+            for p in range(total_pages):
+                start = p * spp
+                end = min(start + spp, n)
+                y = H - margin
+                for path in order_paths[start:end]:
+                    im = Image.open(path).convert("RGB")
+                    w0, h0 = im.size
+                    scale = min(usable_w / w0, max_item_h / h0)
+                    nw, nh = int(w0*scale), int(h0*scale)
+                    x = (W - nw) / 2
+                    y -= nh
+                    img_reader = ImageReader(im.resize((nw, nh), Image.LANCZOS))
+                    c.drawImage(img_reader, x, y, width=nw, height=nh, preserveAspectRatio=False, mask='auto')
+                    y -= gap
+                c.showPage()
+
+        # Poslední stránka – ceník
+        y_top = H - PRICE_TOP_OFFSET_CM * cm
+        max_w = W - 2*margin
+        max_h = (H - (PRICE_TOP_OFFSET_CM * cm)) - margin
+        if self.price_image_path and os.path.exists(self.price_image_path):
+            im = Image.open(self.price_image_path).convert("RGB")
+        else:
+            im = Image.new("RGB", (1200,800), "white")
+            dr = ImageDraw.Draw(im)
+            try: f = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", 36)
+            except Exception: f = ImageFont.load_default()
+            txt = "Cenová tabulka (obrázek nenahrán)"
+            tw, th = dr.textbbox((0,0), txt, font=f)[2:4]
+            dr.text(((1200-tw)//2, (800-th)//2), txt, fill="black", font=f)
+        w0, h0 = im.size
+        scale = min(max_w / w0, max_h / h0, 1.0)
+        nw, nh = int(w0*scale), int(h0*scale)
+        x = (W - nw) / 2
+        y = y_top - nh
+        img_reader_price = ImageReader(im.resize((nw, nh), Image.LANCZOS))
+        c.drawImage(img_reader_price, x, y, width=nw, height=nh, preserveAspectRatio=False, mask='auto')
+        c.showPage(); c.save()
+
+# --------------------------------------------------------------------------------------
+# start
+# --------------------------------------------------------------------------------------
+
+def main() -> int:
+    app = QApplication(sys.argv)
+    w = MainWindow()
+    w.show()
+    return app.exec()
+
+if __name__ == "__main__":
+    sys.exit(main())
