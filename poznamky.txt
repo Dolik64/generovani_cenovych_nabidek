@@ -1,0 +1,18 @@
+potrebuji to rozdelit do souboru
+
+to ale budu delat az ve chvili kdy budou splneny zakladni pozadavky na funkcnost
+
+zjistil jsem ze chat gpt neumi aplikaci napsat celou
+
+musim tedy vymyslet jednodussi tasky a pak je spojit dohromady
+
+urcite nechci pouzivat ocr
+bude to proste screenshot z excelu
+
+
+
+zacnu tim ze udelam pouze to klikani aplikaci na klikani na obrazky, o nic jineho nepujde, jedina vec ktera se bude dit je ze budu mit pool tech obrazku kde pujde scrollovat a jakmile obrazek bude oznacen najede cerveny ramecek a vypise se do terminalu jaky obrazek byl oznacen, jakmile na nej kliknu znovu tak obrazek ztrati to oznaceni a do terminalu se vypise ze vyber byl zrusen
+
+pozor tyto obrazky budou v png, vsechny maji stejne rozliseni a to 2839 x 1004. tyto obrazky budou vsechny v jedne slozce na kterou chci v kodu mit odkaz pomoci cesty. chci aby tyto obrazky vsechny byly zobrazeny v galerii kde pujde scrollovat a chci aby fungovalo to klikani
+
+pouzivat chci toto PySide6 (Qt)
