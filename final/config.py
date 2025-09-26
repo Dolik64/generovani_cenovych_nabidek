@@ -19,6 +19,8 @@ CUSTOM_FONT_TTF = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/ap
 
 # Výchozí složka pro export PDF
 DEFAULT_EXPORT_DIR = Path("/Users/jirka/Desktop")  # uprav dle potřeby
+
+COVER_TITLE_OFFSET_MM = 20.0
 # ---- Layout ----
 SEGMENTS_PER_PAGE_FIXED = 4
 MARGIN_CM_DEFAULT = 2.0

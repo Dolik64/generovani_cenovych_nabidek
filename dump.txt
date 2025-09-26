@@ -1,6 +1,6 @@
 # DUMP SLOŽKY
 Kořen: /Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/final
-Vytvořeno: 2025-09-26 19:28:06
+Vytvořeno: 2025-09-26 19:28:40
 Vynechané složky (glob): ['.git', '__pycache__', '.mypy_cache', '.pytest_cache', '.venv', 'venv', '.idea', '.vscode', '.DS_Store']
 Vynechané soubory (glob): ['*.pyc', '*.pyo', '*.so', '*.dll', '*.dylib', '*.exe', '*.bin', '*.jpg', '*.jpeg', '*.png', '*.gif', '*.webp', '*.ico', '*.pdf', '*.zip', '*.tar', '*.tar.*', '*.gz', '*.7z', '*.rar', '*.db', '*.sqlite*', '*.log', 'dump.txt']
 Limit velikosti souboru: 2.0 MB

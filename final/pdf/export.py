@@ -9,6 +9,9 @@ from reportlab.pdfgen import canvas as pdfcanvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.colors import HexColor
 
+
+from reportlab.pdfbase import pdfmetrics
+
 from config import (
     # Rozměry A4 v bodech
     A4_W_PT, A4_H_PT,
@@ -19,7 +22,7 @@ from config import (
     # Titulní strana
     COVER_TITLE_COLOR_HEX, COVER_LINE_THICKNESS_PT, COVER_SIDE_MARGIN_CM,
     COVER_BAND_TOP_CM, COVER_BAND_BOTTOM_CM, COVER_TITLE_SIZE_PT,
-    COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT,
+    COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT, COVER_TITLE_OFFSET_MM,
     # Datumové helpery
     czech_date, english_date_upper,
     # Pevná šířka screenshotu ceníku (v cm)
@@ -49,25 +52,31 @@ def export_pdf(
     c = pdfcanvas.Canvas(out_path, pagesize=A4)
     W, H = A4_W_PT, A4_H_PT  # body (1 pt = 1/72")
     pt_per_cm = 72.0 / 2.54
+    
+    pt_per_mm = 72.0 / 25.4
+    offset_pt = COVER_TITLE_OFFSET_MM * pt_per_mm  # + nahoru, - dolů
 
         # === Titulní strana ======================================================
     col = HexColor(COVER_TITLE_COLOR_HEX)
 
     left_pt = COVER_SIDE_MARGIN_CM * pt_per_cm
     right_pt = W - left_pt
-    y_top_pt = H - (COVER_BAND_TOP_CM * pt_per_cm)        # horní linka pásu (výš)
-    y_bot_pt = H - (COVER_BAND_BOTTOM_CM * pt_per_cm)     # dolní linka pásu (níž)
-    band_h = max(1.0, y_top_pt - y_bot_pt)                # výška pásu v bodech
+    y_top_pt = H - (COVER_BAND_TOP_CM * pt_per_cm)        # horní linka pásu (vyšší Y)
+    y_bot_pt = H - (COVER_BAND_BOTTOM_CM * pt_per_cm)     # dolní linka pásu (nižší Y)
+    band_h = max(1.0, y_top_pt - y_bot_pt)                # výška pásu
 
-    # Pás (horní a dolní linka)
+    # Linky pásu
     c.setStrokeColor(col)
     c.setLineWidth(COVER_LINE_THICKNESS_PT)
     c.line(left_pt, y_top_pt, right_pt, y_top_pt)
     c.line(left_pt, y_bot_pt, right_pt, y_bot_pt)
 
-    # --- Nadpis: auto-wrap (max 2 řádky), auto-shrink a CENTROVÁNÍ ---
+    # --- Nadpis: wrap (max 2 řádky) + auto-shrink + centrování ---
     title = (title_text.strip() or "CENOVÁ NABÍDKA").upper()
     max_w = right_pt - left_pt
+    leading_factor = 1.12
+    fs = COVER_TITLE_SIZE_PT
+    min_fs = 22
 
     def wrap_lines(text, fs_pt):
         words = text.split()
@@ -84,31 +93,37 @@ def export_pdf(
             lines.append(cur)
         return lines
 
-    fs = COVER_TITLE_SIZE_PT
-    min_fs = 22
-    leading_factor = 1.12
+    def block_metrics(fs_pt):
+        asc = pdfmetrics.getAscent(FONT_NAME)  * fs_pt / 1000.0
+        dsc = abs(pdfmetrics.getDescent(FONT_NAME)) * fs_pt / 1000.0
+        line_h = (asc + dsc) * leading_factor
+        return asc, dsc, line_h
 
     lines = wrap_lines(title, fs)
+    asc, dsc, line_h = block_metrics(fs)
+
     while (
         len(lines) > 2
         or any(c.stringWidth(L, FONT_NAME, fs) > max_w for L in lines)
-        or (len(lines) * fs * leading_factor) > band_h
+        or (len(lines) * line_h) > band_h
     ) and fs > min_fs:
         fs -= 1
         lines = wrap_lines(title, fs)
+        asc, dsc, line_h = block_metrics(fs)
 
-    total_h = len(lines) * fs * leading_factor
-    y = y_bot_pt + (band_h - total_h) / 2.0  # VERTIKÁLNÍ CENTRUM mezi linkami
+    block_h = len(lines) * line_h
+    top_y = y_bot_pt + (band_h - block_h) / 2.0        # horní okraj bloků textu
+    baseline_y = top_y + asc + offset_pt               # baseline první řádky = top + ascent
 
     c.setFillColor(col)
     for L in lines:
         c.setFont(FONT_NAME, fs)
         line_w = c.stringWidth(L, FONT_NAME, fs)
-        x = left_pt + (max_w - line_w) / 2.0  # HORIZONTÁLNÍ CENTRUM mezi linkami
-        c.drawString(x, y, L)
-        y += fs * leading_factor
+        x = left_pt + (max_w - line_w) / 2.0           # horizontální střed pásu
+        c.drawString(x, baseline_y, L)
+        baseline_y += line_h
 
-    # --- Spodní blok: datum (nad adresou) a adresa s leadingem ---
+    # --- Spodní blok: adresa + (volitelně) datum nad adresou ---
     info_x = COVER_INFO_BLOCK_LEFT_CM * pt_per_cm
     info_y_base = COVER_INFO_BLOCK_BOTTOM_CM * pt_per_cm
     fs_info = COVER_INFO_SIZE_PT
@@ -116,7 +131,6 @@ def export_pdf(
     gap_date = 6
 
     info_lines = [ln for ln in info_lines_text.splitlines() if ln.strip()]
-
     y_info = info_y_base
     for ln in info_lines:
         c.setFont(FONT_NAME, fs_info)
@@ -129,7 +143,6 @@ def export_pdf(
         c.drawString(info_x, y_info + gap_date, date_str)
 
     c.showPage()
-    
     # === Komponentové stránky: 4 dlaždice, edge-to-edge, cover ==============
     if order_paths:
         spp = SEGMENTS_PER_PAGE_FIXED  # 4
