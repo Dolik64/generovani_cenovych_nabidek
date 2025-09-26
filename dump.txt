@@ -1,13 +1,17 @@
 # DUMP SLOŽKY
 Kořen: /Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/final
-Vytvořeno: 2025-09-26 15:15:10
+Vytvořeno: 2025-09-26 19:28:06
 Vynechané složky (glob): ['.git', '__pycache__', '.mypy_cache', '.pytest_cache', '.venv', 'venv', '.idea', '.vscode', '.DS_Store']
 Vynechané soubory (glob): ['*.pyc', '*.pyo', '*.so', '*.dll', '*.dylib', '*.exe', '*.bin', '*.jpg', '*.jpeg', '*.png', '*.gif', '*.webp', '*.ico', '*.pdf', '*.zip', '*.tar', '*.tar.*', '*.gz', '*.7z', '*.rar', '*.db', '*.sqlite*', '*.log', 'dump.txt']
 Limit velikosti souboru: 2.0 MB
 
 ## STROM ADRESÁŘŮ
 final/
+├── font/
+│   ├── .DS_Store
+│   └── times.ttf
 ├── pdf/
+│   ├── .DS_Store
 │   └── export.py
 ├── ui/
 │   ├── .DS_Store
@@ -62,11 +66,23 @@ from reportlab.pdfbase.ttfonts import TTFont
 APP_TITLE = "Tvorba cenové nabídky (PySide6)"
 SEGMENT_POOL_DIR = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/pool/segmenty")
 
+# Startovní složka při volbě screenshotu ceníku (otevře se přímo sem)
+PRICE_IMAGE_START_DIR = Path("/Users/jirka/Desktop")  # <- změň si
+
+# (Volitelné) vlastní TTF pro PDF i náhledy – nastav absolutní cestu nebo nech None
+CUSTOM_FONT_TTF = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/final/font/times.ttf")
+
+# Výchozí složka pro export PDF
+DEFAULT_EXPORT_DIR = Path("/Users/jirka/Desktop")  # uprav dle potřeby
 # ---- Layout ----
 SEGMENTS_PER_PAGE_FIXED = 4
 MARGIN_CM_DEFAULT = 2.0
 GAP_CM_DEFAULT = 0.5
 PRICE_TOP_OFFSET_CM = 2
+#tady se upravuje odsazeni
+
+# Pevná šířka screenshotu ceníku (v cm)
+PRICE_IMAGE_WIDTH_CM = 13.0
 
 # A4
 A4_W_PT, A4_H_PT = A4
@@ -95,9 +111,21 @@ def english_date_upper(d=None):
 
 def try_register_font():
     """
-    Zkusí registrovat DejaVuSans.ttf ležící vedle appky, jinak vrátí Helvetica.
-    Vrací (font_name, ttf_path | None).
+    Vrací (font_name, ttf_path|None). Preferuje CUSTOM_FONT_TTF,
+    pak DejaVuSans.ttf vedle configu, jinak spadne na Helvetica.
     """
+    # 1) explicitně zadaný TTF
+    if CUSTOM_FONT_TTF:
+        p = Path(CUSTOM_FONT_TTF)
+        if p.exists():
+            name = p.stem
+            try:
+                pdfmetrics.registerFont(TTFont(name, str(p)))
+                return name, str(p)
+            except Exception:
+                pass
+
+    # 2) DejaVuSans.ttf vedle config.py
     ttf_path = Path(__file__).with_name("DejaVuSans.ttf")
     if ttf_path.exists():
         try:
@@ -105,6 +133,8 @@ def try_register_font():
             return "DejaVuSans", str(ttf_path)
         except Exception:
             pass
+
+    # 3) fallback
     return "Helvetica", None
 
 # Předregistruj (nevadí volat víckrát)
@@ -122,6 +152,7 @@ Soubor přeskočen (binární / nečitelné jako text).
 # -*- coding: utf-8 -*-
 from pathlib import Path
 from typing import List
+from datetime import date
 
 from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtGui import QPixmap, QImage, QAction
@@ -136,10 +167,10 @@ from PIL.ImageQt import ImageQt
 from config import (
     APP_TITLE, SEGMENT_POOL_DIR,
     MARGIN_CM_DEFAULT, GAP_CM_DEFAULT,
-    A4_W_PT, A4_H_PT
+    A4_W_PT, A4_H_PT, PRICE_IMAGE_START_DIR, DEFAULT_EXPORT_DIR
 )
 from widgets.clickable_image import ClickableImage
-from workers.preview_worker import PreviewWorker
+from workers.preview_worker import PreviewWorker, PreviewEmitter
 from pdf.export import export_pdf
 
 class MainWindow(QMainWindow):
@@ -148,32 +179,22 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(APP_TITLE)
         self.resize(1280, 860)
 
-        # Stav
         self.price_image_path: str = ""
-        self.preview_pages = []  # list PIL.Image
+        self.preview_pages = []
 
-        # Debounce pro náhled
         self._preview_timer = QTimer(self)
         self._preview_timer.setSingleShot(True)
         self._preview_timer.setInterval(140)
         self._preview_timer.timeout.connect(self.build_preview_async)
 
-        # ---------------------------- UI ---------------------------- #
-        # Horní panel
+        # --- Horní panel (bez okrajů/mezery) ---
         top_bar = QWidget(); lay_top = QHBoxLayout(top_bar)
         btn_load = QPushButton("Načíst složku se segmenty (PNG)")
         btn_price = QPushButton("Načíst obrázek cenové tabulky")
         btn_pdf = QPushButton("Export PDF…")
-        lay_top.addWidget(btn_load); lay_top.addWidget(btn_price); lay_top.addStretch()
-        lay_top.addWidget(QLabel("Okraj (cm):"))
-        self.spin_margin = QDoubleSpinBox(); self.spin_margin.setRange(0,5); self.spin_margin.setSingleStep(0.5); self.spin_margin.setValue(MARGIN_CM_DEFAULT)
-        lay_top.addWidget(self.spin_margin)
-        lay_top.addWidget(QLabel("Mezera (cm):"))
-        self.spin_gap = QDoubleSpinBox(); self.spin_gap.setRange(0,3); self.spin_gap.setSingleStep(0.5); self.spin_gap.setValue(GAP_CM_DEFAULT)
-        lay_top.addWidget(self.spin_gap)
-        lay_top.addWidget(btn_pdf)
+        lay_top.addWidget(btn_load); lay_top.addWidget(btn_price); lay_top.addStretch(); lay_top.addWidget(btn_pdf)
 
-        # Titulní strana
+        # --- Titulní strana ---
         cover_box = QGroupBox("Titulní strana"); lay_cover = QGridLayout(cover_box)
         self.edit_title = QLineEdit("CENOVÁ NABÍDKA SIMULÁTORU")
         self.edit_info = QTextEdit(); self.edit_info.setPlainText("Jiří Doležal\nNad Hrádkem 284\n25226 Kosoř")
@@ -183,7 +204,7 @@ class MainWindow(QMainWindow):
         lay_cover.addWidget(QLabel("Blok adresy (multi-řádek):"), 1, 0); lay_cover.addWidget(self.edit_info, 1, 1, 1, 3)
         lay_cover.addWidget(QLabel("Datum:"), 0, 4); lay_cover.addWidget(self.combo_date, 0, 5); lay_cover.addWidget(self.chk_today, 0, 6)
 
-        # Galerie
+        # --- Galerie / Pořadí / Náhled (beze změn) ---
         self.gallery_scroll = QScrollArea(); self.gallery_scroll.setWidgetResizable(True)
         self.gallery_scroll.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         self.gallery_content = QWidget()
@@ -193,17 +214,14 @@ class MainWindow(QMainWindow):
         self._item_by_path: dict[str, ClickableImage] = {}
         left_box = QWidget(); left_lay = QVBoxLayout(left_box); left_lay.addWidget(QLabel("Galerie segmentů")); left_lay.addWidget(self.gallery_scroll)
 
-        # Pořadí
         mid_box = QWidget(); lay_mid = QVBoxLayout(mid_box)
         lay_mid.addWidget(QLabel("Vybrané (pořadí) – 4/stranu"))
         self.order_list = QListWidget(); lay_mid.addWidget(self.order_list)
-        row_btns = QHBoxLayout()
-        btn_up = QPushButton("Nahoru"); btn_dn = QPushButton("Dolů"); btn_rm = QPushButton("Odebrat")
+        row_btns = QHBoxLayout(); btn_up = QPushButton("Nahoru"); btn_dn = QPushButton("Dolů"); btn_rm = QPushButton("Odebrat")
         row_btns.addWidget(btn_up); row_btns.addWidget(btn_dn); row_btns.addWidget(btn_rm); lay_mid.addLayout(row_btns)
         row_btns2 = QHBoxLayout(); btn_all = QPushButton("Vybrat vše"); btn_clr = QPushButton("Zrušit výběr")
         row_btns2.addWidget(btn_all); row_btns2.addWidget(btn_clr); lay_mid.addLayout(row_btns2)
 
-        # Náhled
         right_box = QWidget(); lay_right = QVBoxLayout(right_box)
         top_preview = QHBoxLayout(); top_preview.addWidget(QLabel("Stránka:"))
         self.page_combo = QComboBox(); self.page_combo.addItem("1")
@@ -215,7 +233,6 @@ class MainWindow(QMainWindow):
 
         central = QWidget(); v = QVBoxLayout(central); v.addWidget(top_bar); v.addWidget(cover_box); v.addWidget(splitter); self.setCentralWidget(central)
 
-        # Menu
         self._make_menu()
 
         # Signály
@@ -223,22 +240,19 @@ class MainWindow(QMainWindow):
         btn_price.clicked.connect(self.load_price_image)
         btn_pdf.clicked.connect(self.export_pdf)
 
-        btn_up.clicked.connect(self.move_up)
-        btn_dn.clicked.connect(self.move_down)
-        btn_rm.clicked.connect(self.remove_from_order)
-
-        btn_all.clicked.connect(self.select_all)
-        btn_clr.clicked.connect(self.clear_selection)
+        btn_up.clicked.connect(self.move_up); btn_dn.clicked.connect(self.move_down); btn_rm.clicked.connect(self.remove_from_order)
+        btn_all.clicked.connect(self.select_all); btn_clr.clicked.connect(self.clear_selection)
 
         self.page_combo.currentIndexChanged.connect(self.show_preview_page)
-        self.spin_margin.valueChanged.connect(self.schedule_preview)
-        self.spin_gap.valueChanged.connect(self.schedule_preview)
         self.edit_title.textChanged.connect(self.schedule_preview)
         self.edit_info.textChanged.connect(self.schedule_preview)
         self.combo_date.currentTextChanged.connect(self.schedule_preview)
         self.chk_today.toggled.connect(self.schedule_preview)
 
-        # Přednačtení
+        # Most signálu z workeru
+        self._emitter = PreviewEmitter()
+        self._emitter.pages_ready.connect(self.accept_preview_pages)
+
         if SEGMENT_POOL_DIR.exists():
             self.load_segments_dir(SEGMENT_POOL_DIR)
 
@@ -362,18 +376,16 @@ class MainWindow(QMainWindow):
     def build_preview_async(self):
         worker = PreviewWorker(
             order_paths=self._order_paths(),
-            margin_cm=float(self.spin_margin.value()),
-            gap_cm=float(self.spin_gap.value()),
+            margin_cm=0.0,
+            gap_cm=0.0,
             price_path=self.price_image_path,
             title=self.edit_title.text(),
             info_text=self.edit_info.toPlainText(),
             date_style=self.combo_date.currentText(),
             use_today=self.chk_today.isChecked(),
-            receiver=self,
-            slot_name="accept_preview_pages",
+            emitter=self._emitter,
             width_px=900
         )
-        # QRunnable spustí globální thread pool
         from PySide6.QtCore import QThreadPool
         QThreadPool.globalInstance().start(worker)
 
@@ -405,150 +417,265 @@ class MainWindow(QMainWindow):
 
     # ---- Ceník ----
     def load_price_image(self):
-        p, _ = QFileDialog.getOpenFileName(self, "Vyber obrázek s cenovou tabulkou",
-                                           "", "Obrázky (*.png *.jpg *.jpeg *.webp *.tif *.tiff)")
+        start_dir = str(PRICE_IMAGE_START_DIR) if PRICE_IMAGE_START_DIR and PRICE_IMAGE_START_DIR.exists() else ""
+        p, _ = QFileDialog.getOpenFileName(
+            self,
+            "Vyber obrázek s cenovou tabulkou",
+            start_dir,  # <- startovní adresář
+            "Obrázky (*.png *.jpg *.jpeg *.webp *.tif *.tiff)"
+        )
         if p:
             self.price_image_path = p
             self.schedule_preview()
 
     # ---- PDF ----
     def export_pdf(self):
-        out, _ = QFileDialog.getSaveFileName(self, "Uložit PDF", "", "PDF (*.pdf)")
-        if not out: return
+        # navrhni název v DEFAULT_EXPORT_DIR
+        try:
+            DEFAULT_EXPORT_DIR.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+        suggested = DEFAULT_EXPORT_DIR / f"cenova_nabidka_{date.today().strftime('%Y-%m-%d')}.pdf"
+
+        out, _ = QFileDialog.getSaveFileName(
+            self, "Uložit PDF", str(suggested), "PDF (*.pdf)"
+        )
+        if not out:
+            return
         try:
             export_pdf(
                 out_path=out,
                 order_paths=self._order_paths(),
-                margin_cm=float(self.spin_margin.value()),
-                gap_cm=float(self.spin_gap.value()),
+                margin_cm=0.0,
+                gap_cm=0.0,
                 title_text=self.edit_title.text(),
                 info_lines_text=self.edit_info.toPlainText(),
                 date_style=self.combo_date.currentText(),
                 use_today=self.chk_today.isChecked(),
                 price_image_path=self.price_image_path or None,
             )
-            QMessageBox.information(self, "Hotovo", f"PDF bylo vytvořeno:\n{out}")
+            print(f"[OK] PDF export dokončen: {out}")
         except Exception as e:
+            from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Chyba", f"Nepodařilo se vytvořit PDF:\n{e}")
 ----- END: ui/main_window.py -----
+
+
+----- BEGIN: pdf/.DS_Store -----
+Soubor přeskočen (binární / nečitelné jako text).
+
+----- END: pdf/.DS_Store -----
 
 
 ----- BEGIN: pdf/export.py -----
 # -*- coding: utf-8 -*-
 import math
 import os
-from pathlib import Path
 from typing import List
+
 from PIL import Image, ImageDraw, ImageFont
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas as pdfcanvas
-from reportlab.lib.units import cm
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.colors import HexColor
 
 from config import (
-    A4_W_PT, A4_H_PT, FONT_NAME, PREVIEW_TTF,
+    # Rozměry A4 v bodech
+    A4_W_PT, A4_H_PT,
+    # Fonty pro PDF / náhled
+    FONT_NAME, PREVIEW_TTF,
+    # Logika dokumentu
     SEGMENTS_PER_PAGE_FIXED, PRICE_TOP_OFFSET_CM,
+    # Titulní strana
     COVER_TITLE_COLOR_HEX, COVER_LINE_THICKNESS_PT, COVER_SIDE_MARGIN_CM,
     COVER_BAND_TOP_CM, COVER_BAND_BOTTOM_CM, COVER_TITLE_SIZE_PT,
     COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT,
-    czech_date, english_date_upper
+    # Datumové helpery
+    czech_date, english_date_upper,
+    # Pevná šířka screenshotu ceníku (v cm)
+    PRICE_IMAGE_WIDTH_CM,
 )
 
 def export_pdf(
     out_path: str,
     order_paths: List[str],
-    margin_cm: float,
-    gap_cm: float,
+    margin_cm: float,      # ignorováno (komponenty jedou edge-to-edge)
+    gap_cm: float,         # ignorováno
     title_text: str,
     info_lines_text: str,
     date_style: str,
     use_today: bool,
     price_image_path: str | None,
 ):
+    """
+    Export PDF:
+      - Titulní strana dle cm-konstant v config.py
+      - Stránky komponent: 4 „dlaždice“ na výšku, edge-to-edge, cover ořez (bez deformace)
+      - Poslední strana: screenshot ceníku s horním odsazením PRICE_TOP_OFFSET_CM
+        a pevnou šířkou PRICE_IMAGE_WIDTH_CM (výška se dopočítá; když by přesáhla,
+        zmenší se šířka/výška úměrně). Obrázek se NEpřevzorkovává – vkládá se
+        v plném rozlišení pro minimální ztráty kvality.
+    """
     c = pdfcanvas.Canvas(out_path, pagesize=A4)
-    W, H = A4_W_PT, A4_H_PT
-    margin = margin_cm * cm
-    gap = gap_cm * cm
+    W, H = A4_W_PT, A4_H_PT  # body (1 pt = 1/72")
+    pt_per_cm = 72.0 / 2.54
 
-    # Titulní strana
+        # === Titulní strana ======================================================
     col = HexColor(COVER_TITLE_COLOR_HEX)
-    left = COVER_SIDE_MARGIN_CM * cm
-    right = W - left
-    y_top = H - (COVER_BAND_TOP_CM * cm)
-    y_bot = H - (COVER_BAND_BOTTOM_CM * cm)
-    c.setStrokeColor(col); c.setLineWidth(COVER_LINE_THICKNESS_PT)
-    c.line(left, y_top, right, y_top); c.line(left, y_bot, right, y_bot)
 
+    left_pt = COVER_SIDE_MARGIN_CM * pt_per_cm
+    right_pt = W - left_pt
+    y_top_pt = H - (COVER_BAND_TOP_CM * pt_per_cm)        # horní linka pásu (výš)
+    y_bot_pt = H - (COVER_BAND_BOTTOM_CM * pt_per_cm)     # dolní linka pásu (níž)
+    band_h = max(1.0, y_top_pt - y_bot_pt)                # výška pásu v bodech
+
+    # Pás (horní a dolní linka)
+    c.setStrokeColor(col)
+    c.setLineWidth(COVER_LINE_THICKNESS_PT)
+    c.line(left_pt, y_top_pt, right_pt, y_top_pt)
+    c.line(left_pt, y_bot_pt, right_pt, y_bot_pt)
+
+    # --- Nadpis: auto-wrap (max 2 řádky), auto-shrink a CENTROVÁNÍ ---
     title = (title_text.strip() or "CENOVÁ NABÍDKA").upper()
-    c.setFillColor(col); t = c.beginText()
-    t.setTextOrigin(left, (y_top + y_bot)/2 - (COVER_TITLE_SIZE_PT*0.35))
-    t.setFont(FONT_NAME, COVER_TITLE_SIZE_PT)
-    try: t.setCharSpace(1.2)
-    except Exception: pass
-    t.textLine(title); c.drawText(t)
+    max_w = right_pt - left_pt
 
-    info_x = COVER_INFO_BLOCK_LEFT_CM * cm
-    info_y_base = COVER_INFO_BLOCK_BOTTOM_CM * cm
-    c.setFont(FONT_NAME, COVER_INFO_SIZE_PT)
+    def wrap_lines(text, fs_pt):
+        words = text.split()
+        lines, cur = [], ""
+        for w in words:
+            test = (cur + " " + w).strip()
+            if c.stringWidth(test, FONT_NAME, fs_pt) <= max_w:
+                cur = test
+            else:
+                if cur:
+                    lines.append(cur)
+                cur = w
+        if cur:
+            lines.append(cur)
+        return lines
+
+    fs = COVER_TITLE_SIZE_PT
+    min_fs = 22
+    leading_factor = 1.12
+
+    lines = wrap_lines(title, fs)
+    while (
+        len(lines) > 2
+        or any(c.stringWidth(L, FONT_NAME, fs) > max_w for L in lines)
+        or (len(lines) * fs * leading_factor) > band_h
+    ) and fs > min_fs:
+        fs -= 1
+        lines = wrap_lines(title, fs)
+
+    total_h = len(lines) * fs * leading_factor
+    y = y_bot_pt + (band_h - total_h) / 2.0  # VERTIKÁLNÍ CENTRUM mezi linkami
+
+    c.setFillColor(col)
+    for L in lines:
+        c.setFont(FONT_NAME, fs)
+        line_w = c.stringWidth(L, FONT_NAME, fs)
+        x = left_pt + (max_w - line_w) / 2.0  # HORIZONTÁLNÍ CENTRUM mezi linkami
+        c.drawString(x, y, L)
+        y += fs * leading_factor
+
+    # --- Spodní blok: datum (nad adresou) a adresa s leadingem ---
+    info_x = COVER_INFO_BLOCK_LEFT_CM * pt_per_cm
+    info_y_base = COVER_INFO_BLOCK_BOTTOM_CM * pt_per_cm
+    fs_info = COVER_INFO_SIZE_PT
+    leading_info = fs_info * 1.15
+    gap_date = 6
+
+    info_lines = [ln for ln in info_lines_text.splitlines() if ln.strip()]
+
+    y_info = info_y_base
+    for ln in info_lines:
+        c.setFont(FONT_NAME, fs_info)
+        c.drawString(info_x, y_info, ln)
+        y_info += leading_info
+
     if use_today:
+        c.setFont(FONT_NAME, fs_info)
         date_str = english_date_upper() if date_style == "EN" else czech_date()
-        c.drawString(info_x, info_y_base + 3*(COVER_INFO_SIZE_PT+2), date_str)
-        start_y = info_y_base + 2*(COVER_INFO_SIZE_PT+2)
-    else:
-        start_y = info_y_base
-    for i, line in enumerate(info_lines_text.splitlines()):
-        c.drawString(info_x, start_y + i*(COVER_INFO_SIZE_PT+2), line)
+        c.drawString(info_x, y_info + gap_date, date_str)
 
     c.showPage()
+    
+    # === Komponentové stránky: 4 dlaždice, edge-to-edge, cover ==============
+    if order_paths:
+        spp = SEGMENTS_PER_PAGE_FIXED  # 4
+        total_pages = math.ceil(len(order_paths) / spp)
+        cell_h_pt = H / spp                       # výška dlaždice v bodech
+        target_ratio = W / cell_h_pt              # poměr w:h dlaždice
 
-    # Komponenty 4/stranu
-    n = len(order_paths); spp = SEGMENTS_PER_PAGE_FIXED
-    if n > 0:
-        total_pages = math.ceil(n / spp)
-        usable_w = W - 2*margin
-        usable_h = H - 2*margin
-        total_gap = gap * max(0, spp-1)
-        max_item_h = max(10, (usable_h - total_gap) / spp)
         for p in range(total_pages):
             start = p * spp
-            end = min(start + spp, n)
-            y = H - margin
+            end = min(start + spp, len(order_paths))
+            y_top = H
             for path in order_paths[start:end]:
                 im = Image.open(path).convert("RGB")
-                w0, h0 = im.size
-                scale = min(usable_w / w0, max_item_h / h0)
-                nw, nh = int(w0*scale), int(h0*scale)
-                x = (W - nw) / 2
-                y -= nh
-                img_reader = ImageReader(im.resize((nw, nh), Image.LANCZOS))
-                c.drawImage(img_reader, x, y, width=nw, height=nh, preserveAspectRatio=False, mask='auto')
-                y -= gap
+                iw, ih = im.size
+                img_ratio = iw / ih
+
+                # cover ořez do poměru W : cell_h_pt (poměr nezávislý na jednotkách)
+                if img_ratio > target_ratio:
+                    new_w = int(ih * target_ratio)
+                    x0 = max(0, (iw - new_w) // 2)
+                    box = (x0, 0, x0 + new_w, ih)
+                else:
+                    new_h = int(iw / target_ratio)
+                    y0 = max(0, (ih - new_h) // 2)
+                    box = (0, y0, iw, y0 + new_h)
+
+                tile = im.crop(box)  # bez resize – ReportLab škáluje při vykreslení
+                img_reader = ImageReader(tile)
+                y_top -= cell_h_pt
+                c.drawImage(img_reader, 0, y_top, width=W, height=cell_h_pt,
+                            preserveAspectRatio=False, mask='auto')
             c.showPage()
 
-    # Poslední stránka – ceník
-    y_top = H - PRICE_TOP_OFFSET_CM * cm
-    max_w = W - 2*margin
-    max_h = (H - (PRICE_TOP_OFFSET_CM * cm)) - margin
+    # === Cenová stránka: pevná šířka v cm, horní odsazení, bez re-samplingu ==
+    top_offset_pt = PRICE_TOP_OFFSET_CM * pt_per_cm
+    target_w_pt   = PRICE_IMAGE_WIDTH_CM * pt_per_cm
+    max_h_pt      = H - top_offset_pt
+
+    # Načtení screenshotu (PNG doporučeno kvůli ostrosti textu)
     if price_image_path and os.path.exists(price_image_path):
         im = Image.open(price_image_path).convert("RGB")
     else:
-        im = Image.new("RGB", (1200,800), "white")
+        # Placeholder, když obrázek není k dispozici
+        im = Image.new("RGB", (1200, 800), "white")
         dr = ImageDraw.Draw(im)
-        try: f = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", 36)
-        except Exception: f = ImageFont.load_default()
+        try:
+            f = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", 36)
+        except Exception:
+            f = ImageFont.load_default()
         txt = "Cenová tabulka (obrázek nenahrán)"
-        tw, th = dr.textbbox((0,0), txt, font=f)[2:4]
-        dr.text(((1200-tw)//2, (800-th)//2), txt, fill="black", font=f)
+        tw, th = dr.textbbox((0, 0), txt, font=f)[2:4]
+        dr.text(((1200 - tw) // 2, (800 - th) // 2), txt, fill="black", font=f)
 
-    w0, h0 = im.size
-    scale = min(max_w / w0, max_h / h0, 1.0)
-    nw, nh = int(w0*scale), int(h0*scale)
-    x = (W - nw) / 2
-    y = y_top - nh
-    img_reader_price = ImageReader(im.resize((nw, nh), Image.LANCZOS))
-    c.drawImage(img_reader_price, x, y, width=nw, height=nh, preserveAspectRatio=False, mask='auto')
-    c.showPage(); c.save()
+    w0, h0 = im.size  # pixely
+
+    # Výška v bodech při pevné šířce (poměr stran)
+    height_pt = (h0 / w0) * target_w_pt
+
+    # Když by výška přesáhla dostupný prostor pod horním odsazením,
+    # zmenši úměrně i šířku (stále bez re-samplingu originálu).
+    if height_pt > max_h_pt:
+        scale = max_h_pt / height_pt
+        width_pt = target_w_pt * scale
+        height_pt = max_h_pt
+    else:
+        width_pt = target_w_pt
+
+    # Vlož originální bitmapu v plném rozlišení, jen ji „vykresli“ na daný box.
+    img_reader_price = ImageReader(im)
+    x = (W - width_pt) / 2
+    y = H - top_offset_pt - height_pt
+    c.drawImage(img_reader_price, x, y, width=width_pt, height=height_pt,
+                preserveAspectRatio=False, mask='auto')
+
+    c.showPage()
+    c.save()
 ----- END: pdf/export.py -----
 
 
@@ -557,37 +684,39 @@ def export_pdf(
 import math
 import os
 from typing import List
-from PySide6.QtCore import QRunnable, Qt, QMetaObject, Q_ARG
+
+from PySide6.QtCore import QRunnable, QObject, Signal
 from PIL import Image, ImageDraw, ImageFont
+from reportlab.lib.units import cm
 
 from config import (
     A4_W_PT, A4_H_PT, SEGMENTS_PER_PAGE_FIXED, PRICE_TOP_OFFSET_CM,
     COVER_TITLE_COLOR_HEX, COVER_LINE_THICKNESS_PT, COVER_SIDE_MARGIN_CM,
     COVER_BAND_TOP_CM, COVER_BAND_BOTTOM_CM, COVER_TITLE_SIZE_PT,
     COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT,
-    PREVIEW_TTF, czech_date, english_date_upper
+    PREVIEW_TTF,PRICE_IMAGE_WIDTH_CM, czech_date, english_date_upper
 )
-from reportlab.lib.units import cm
+
+class PreviewEmitter(QObject):
+    pages_ready = Signal(list)  # list PIL.Image
 
 class PreviewWorker(QRunnable):
     """
-    Staví PIL náhledové stránky na pozadí a předá list PIL.Image zpět do GUI vlákna.
+    Staví PIL náhledové stránky na pozadí a po dokončení emituje pages_ready(list).
+    Komponentové stránky: 4 dlaždice na výšku, bez okrajů a mezer (edge-to-edge, cover).
     """
     def __init__(self, order_paths: List[str], margin_cm: float, gap_cm: float,
                  price_path: str, title: str, info_text: str,
                  date_style: str, use_today: bool,
-                 receiver: object, slot_name: str, width_px: int = 900):
+                 emitter: PreviewEmitter, width_px: int = 900):
         super().__init__()
         self.order_paths = order_paths
-        self.margin_cm = margin_cm
-        self.gap_cm = gap_cm
         self.price_path = price_path
         self.title = title
         self.info_text = info_text
         self.date_style = date_style
         self.use_today = use_today
-        self.receiver = receiver
-        self.slot_name = slot_name
+        self.emitter = emitter
         self.width_px = width_px
 
     def run(self):
@@ -600,8 +729,7 @@ class PreviewWorker(QRunnable):
             paths = self.order_paths[p*spp:(p+1)*spp]
             pages.append(self._render_components_preview_pil(paths))
         pages.append(self._render_price_preview_pil())
-
-        QMetaObject.invokeMethod(self.receiver, self.slot_name, Qt.QueuedConnection, Q_ARG(object, pages))
+        self.emitter.pages_ready.emit(pages)
 
     # ---- helpers ----
     def _blank_a4(self):
@@ -616,73 +744,164 @@ class PreviewWorker(QRunnable):
         W, H = img.size
         col = tuple(int(COVER_TITLE_COLOR_HEX[i:i+2], 16) for i in (1,3,5))
 
-        left = int(COVER_SIDE_MARGIN_CM * (W / (A4_W_PT / cm)))
+        # Přepočty cm -> px (podle poměru A4 pt->px)
+        px_per_pt_x = W / A4_W_PT
+        px_per_pt_y = H / A4_H_PT
+        pt_per_cm = 72.0 / 2.54
+        px_per_cm_x = px_per_pt_x * pt_per_cm
+        px_per_cm_y = px_per_pt_y * pt_per_cm
+
+        left = int(COVER_SIDE_MARGIN_CM * px_per_cm_x)
         right = W - left
-        y_top = int(COVER_BAND_TOP_CM * (H / (A4_H_PT / cm)))
-        y_bot = int(COVER_BAND_BOTTOM_CM * (H / (A4_H_PT / cm)))
+        y_top = int(COVER_BAND_TOP_CM * px_per_cm_y)       # horní linka pásu (menší y)
+        y_bot = int(COVER_BAND_BOTTOM_CM * px_per_cm_y)    # dolní linka pásu (větší y)
+        band_h = max(1, y_bot - y_top)
+
+        # linky pásu
         draw.line([(left, y_top), (right, y_top)], fill=col, width=max(1, COVER_LINE_THICKNESS_PT//2 or 1))
         draw.line([(left, y_bot), (right, y_bot)], fill=col, width=max(1, COVER_LINE_THICKNESS_PT//2 or 1))
 
-        try:
-            font = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", COVER_TITLE_SIZE_PT)
-        except Exception:
-            font = ImageFont.load_default()
-        title = (self.title.strip() or "CENOVÁ NABÍDKA").upper()
-        th = ImageDraw.Draw(Image.new("RGB",(1,1))).textbbox((0,0), title, font=font)[3]
-        y_text = (y_top + y_bot - th) // 2
-        draw.text((left, y_text), title, fill=col, font=font)
+        # Helpery
+        def font_px(size_pt):
+            try:
+                return ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", size_pt)
+            except Exception:
+                return ImageFont.load_default()
 
-        try:
-            info_font = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", COVER_INFO_SIZE_PT)
-        except Exception:
-            info_font = ImageFont.load_default()
-        info_left = int(COVER_INFO_BLOCK_LEFT_CM * (W / (A4_W_PT / cm)))
-        info_bottom = int(COVER_INFO_BLOCK_BOTTOM_CM * (H / (A4_H_PT / cm)))
+        def text_w(s, f):
+            bbox = draw.textbbox((0,0), s, font=f)
+            return bbox[2] - bbox[0]
+
+        def text_h(f):
+            bbox = draw.textbbox((0,0), "Ag", font=f)
+            return bbox[3] - bbox[1]
+
+        # Nadpis: wrap + shrink + centrování
+        title = (self.title.strip() or "CENOVÁ NABÍDKA").upper()
+        fs = COVER_TITLE_SIZE_PT
+        min_fs = 22
+        leading_factor = 1.12
+
+        def wrap_lines_px(text, fs_pt):
+            f = font_px(fs_pt)
+            lines, cur = [], ""
+            max_w = right - left
+            for w in text.split():
+                test = (cur + " " + w).strip()
+                if text_w(test, f) <= max_w:
+                    cur = test
+                else:
+                    if cur:
+                        lines.append(cur)
+                    cur = w
+            if cur:
+                lines.append(cur)
+            return lines, f
+
+        lines, f = wrap_lines_px(title, fs)
+        while True:
+            line_h = int(text_h(f) * leading_factor)
+            if (len(lines) <= 2) and (max(text_w(L, f) for L in lines) <= (right - left)) and (len(lines)*line_h <= band_h):
+                break
+            if fs <= min_fs:
+                break
+            fs -= 1
+            lines, f = wrap_lines_px(title, fs)
+
+        line_h = int(text_h(f) * leading_factor)
+        total_h = len(lines) * line_h
+        y = y_top + (band_h - total_h) // 2  # VERTIKÁLNÍ CENTRUM
+
+        for L in lines:
+            x = left + (right - left - text_w(L, f)) // 2  # HORIZONTÁLNÍ CENTRUM
+            draw.text((x, y), L, fill=col, font=f)
+            y += line_h
+
+        # Spodní blok: datum nad adresou
+        info_left = int(COVER_INFO_BLOCK_LEFT_CM * px_per_cm_x)
+        info_bottom = int(COVER_INFO_BLOCK_BOTTOM_CM * px_per_cm_y)
+        f_info = font_px(COVER_INFO_SIZE_PT)
+        line_h_info = int(text_h(f_info) * 1.15)
+        gap_date = max(4, line_h_info // 3)
+
+        info_lines = [ln for ln in (self.info_text or "").splitlines() if ln.strip()]
+        total_info_h = len(info_lines) * line_h_info
+        y_start = H - info_bottom - total_info_h
+        y_run = y_start
+        for ln in info_lines:
+            draw.text((info_left, y_run), ln, fill=col, font=f_info)
+            y_run += line_h_info
+
         if self.use_today:
             date_str = english_date_upper() if self.date_style == "EN" else czech_date()
-            draw.text((info_left, H - info_bottom - COVER_INFO_SIZE_PT*2), date_str, fill=col, font=info_font)
-            y_start = H - info_bottom - COVER_INFO_SIZE_PT
-        else:
-            y_start = H - info_bottom
-        for i, line in enumerate((self.info_text or "").splitlines()):
-            draw.text((info_left, y_start + i*(COVER_INFO_SIZE_PT+4)), line, fill=col, font=info_font)
+            y_date = y_start - gap_date - (line_h_info - text_h(f_info))
+            draw.text((info_left, max(0, y_date)), date_str, fill=col, font=f_info)
+
         return img
 
     def _render_components_preview_pil(self, paths):
+        """
+        4 dlaždice přes celou šířku, rovnoměrně na výšku, cover (ořez bez deformace),
+        žádné okraje/mezeru.
+        """
         img = self._blank_a4()
-        draw = ImageDraw.Draw(img)
         W, H = img.size
-        margin_px = int(self.margin_cm * (W / (A4_W_PT / cm)))
-        gap_px = int(self.gap_cm * (W / (A4_W_PT / cm)))
-        usable_w = W - 2*margin_px
-        usable_h = H - 2*margin_px
-        total_gap = gap_px * 3  # 4 na stranu => 3 mezery
-        max_item_h = max(10, (usable_h - total_gap) // SEGMENTS_PER_PAGE_FIXED)
-        y = margin_px
+        draw = ImageDraw.Draw(img)
+        cell_h = H // SEGMENTS_PER_PAGE_FIXED
+        y = 0
+
+        target_ratio = W / cell_h  # poměr stran dlaždice
+
         for p in paths:
             try:
                 im = Image.open(p).convert("RGB")
             except Exception:
                 im = Image.new("RGB", (2839, 1004), "lightgray")
-            w0, h0 = im.size
-            scale = min(usable_w / w0, max_item_h / h0)
-            nw, nh = max(1, int(w0*scale)), max(1, int(h0*scale))
-            im2 = im.resize((nw, nh), Image.BILINEAR)
-            x = margin_px + (usable_w - nw)//2
-            img.paste(im2, (x, y))
-            y += nh + gap_px
-        draw.rectangle([0,0,W-1,H-1], outline="#dddddd")
+
+            iw, ih = im.size
+            img_ratio = iw / ih
+
+            # cover crop na poměr W:cell_h
+            if img_ratio > target_ratio:
+                # příliš široké -> ořež šířku
+                new_w = int(ih * target_ratio)
+                x0 = max(0, (iw - new_w) // 2)
+                box = (x0, 0, x0 + new_w, ih)
+            else:
+                # příliš vysoké -> ořež výšku
+                new_h = int(iw / target_ratio)
+                y0 = max(0, (ih - new_h) // 2)
+                box = (0, y0, iw, y0 + new_h)
+
+            tile = im.crop(box).resize((W, cell_h), Image.LANCZOS)
+            img.paste(tile, (0, y))
+            y += cell_h
+
+        # žádná bordura – celé edge-to-edge
         return img
 
     def _render_price_preview_pil(self):
+        """
+        Poslední stránka: horní odsazení v cm; šířka screenshotu pevně PRICE_IMAGE_WIDTH_CM,
+        výška se dopočítá. Pokud by výška přesáhla dostupný prostor, zmenší se (šířka < 15 cm).
+        """
         img = self._blank_a4()
-        draw = ImageDraw.Draw(img)
         W, H = img.size
-        margin_px = int(self.margin_cm * (W / (A4_W_PT / cm)))
-        top_offset_px = int(PRICE_TOP_OFFSET_CM * (H / (A4_H_PT / cm)))
-        max_w = W - 2*margin_px
-        max_h = H - top_offset_px - margin_px
 
+        # převod cm->px: vycházej z rozměru náhledu (W,H) vs. A4 v bodech
+        px_per_pt_x = W / A4_W_PT
+        px_per_pt_y = H / A4_H_PT
+        pt_per_cm = 72.0 / 2.54
+        px_per_cm_x = px_per_pt_x * pt_per_cm
+        px_per_cm_y = px_per_pt_y * pt_per_cm
+
+        top_offset_px = int(PRICE_TOP_OFFSET_CM * px_per_cm_y)
+        target_w_px  = int(PRICE_IMAGE_WIDTH_CM * px_per_cm_x)
+        max_h_px     = H - top_offset_px
+
+        # načti/placeholder
+        from PIL import Image, ImageDraw, ImageFont
+        import os
         if self.price_path and os.path.exists(self.price_path):
             try:
                 im = Image.open(self.price_path).convert("RGB")
@@ -700,15 +919,34 @@ class PreviewWorker(QRunnable):
             pd.text(((1200-tw)//2, (800-th)//2), text, fill="black", font=font)
 
         w0, h0 = im.size
-        scale = min(max_w / w0, max_h / h0, 1.0)
-        nw, nh = int(w0*scale), int(h0*scale)
+
+        # fit-to-width (15 cm), případně cap na výšku
+        scale_w = target_w_px / w0
+        target_h_px = int(h0 * scale_w)
+        if target_h_px > max_h_px:
+            scale = max_h_px / h0
+        else:
+            scale = scale_w
+
+        nw, nh = max(1, int(w0*scale)), max(1, int(h0*scale))
         im2 = im.resize((nw, nh), Image.BILINEAR)
         x = (W - nw)//2
         y = top_offset_px
         img.paste(im2, (x, y))
-        draw.rectangle([0,0,W-1,H-1], outline="#dddddd")
         return img
 ----- END: workers/preview_worker.py -----
+
+
+----- BEGIN: font/.DS_Store -----
+Soubor přeskočen (binární / nečitelné jako text).
+
+----- END: font/.DS_Store -----
+
+
+----- BEGIN: font/times.ttf -----
+Soubor přeskočen (binární / nečitelné jako text).
+
+----- END: font/times.ttf -----
 
 
 ----- BEGIN: widgets/clickable_image.py -----

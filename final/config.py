@@ -17,6 +17,8 @@ PRICE_IMAGE_START_DIR = Path("/Users/jirka/Desktop")  # <- změň si
 # (Volitelné) vlastní TTF pro PDF i náhledy – nastav absolutní cestu nebo nech None
 CUSTOM_FONT_TTF = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/final/font/times.ttf")
 
+# Výchozí složka pro export PDF
+DEFAULT_EXPORT_DIR = Path("/Users/jirka/Desktop")  # uprav dle potřeby
 # ---- Layout ----
 SEGMENTS_PER_PAGE_FIXED = 4
 MARGIN_CM_DEFAULT = 2.0

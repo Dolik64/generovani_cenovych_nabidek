@@ -50,45 +50,86 @@ def export_pdf(
     W, H = A4_W_PT, A4_H_PT  # body (1 pt = 1/72")
     pt_per_cm = 72.0 / 2.54
 
-    # === Titulní strana ======================================================
+        # === Titulní strana ======================================================
     col = HexColor(COVER_TITLE_COLOR_HEX)
 
     left_pt = COVER_SIDE_MARGIN_CM * pt_per_cm
     right_pt = W - left_pt
-    y_top_pt = H - (COVER_BAND_TOP_CM * pt_per_cm)
-    y_bot_pt = H - (COVER_BAND_BOTTOM_CM * pt_per_cm)
+    y_top_pt = H - (COVER_BAND_TOP_CM * pt_per_cm)        # horní linka pásu (výš)
+    y_bot_pt = H - (COVER_BAND_BOTTOM_CM * pt_per_cm)     # dolní linka pásu (níž)
+    band_h = max(1.0, y_top_pt - y_bot_pt)                # výška pásu v bodech
 
+    # Pás (horní a dolní linka)
     c.setStrokeColor(col)
     c.setLineWidth(COVER_LINE_THICKNESS_PT)
     c.line(left_pt, y_top_pt, right_pt, y_top_pt)
     c.line(left_pt, y_bot_pt, right_pt, y_bot_pt)
 
+    # --- Nadpis: auto-wrap (max 2 řádky), auto-shrink a CENTROVÁNÍ ---
     title = (title_text.strip() or "CENOVÁ NABÍDKA").upper()
-    c.setFillColor(col)
-    t = c.beginText()
-    t.setTextOrigin(left_pt, (y_top_pt + y_bot_pt)/2 - (COVER_TITLE_SIZE_PT*0.35))
-    t.setFont(FONT_NAME, COVER_TITLE_SIZE_PT)
-    try:
-        t.setCharSpace(1.2)
-    except Exception:
-        pass
-    t.textLine(title)
-    c.drawText(t)
+    max_w = right_pt - left_pt
 
+    def wrap_lines(text, fs_pt):
+        words = text.split()
+        lines, cur = [], ""
+        for w in words:
+            test = (cur + " " + w).strip()
+            if c.stringWidth(test, FONT_NAME, fs_pt) <= max_w:
+                cur = test
+            else:
+                if cur:
+                    lines.append(cur)
+                cur = w
+        if cur:
+            lines.append(cur)
+        return lines
+
+    fs = COVER_TITLE_SIZE_PT
+    min_fs = 22
+    leading_factor = 1.12
+
+    lines = wrap_lines(title, fs)
+    while (
+        len(lines) > 2
+        or any(c.stringWidth(L, FONT_NAME, fs) > max_w for L in lines)
+        or (len(lines) * fs * leading_factor) > band_h
+    ) and fs > min_fs:
+        fs -= 1
+        lines = wrap_lines(title, fs)
+
+    total_h = len(lines) * fs * leading_factor
+    y = y_bot_pt + (band_h - total_h) / 2.0  # VERTIKÁLNÍ CENTRUM mezi linkami
+
+    c.setFillColor(col)
+    for L in lines:
+        c.setFont(FONT_NAME, fs)
+        line_w = c.stringWidth(L, FONT_NAME, fs)
+        x = left_pt + (max_w - line_w) / 2.0  # HORIZONTÁLNÍ CENTRUM mezi linkami
+        c.drawString(x, y, L)
+        y += fs * leading_factor
+
+    # --- Spodní blok: datum (nad adresou) a adresa s leadingem ---
     info_x = COVER_INFO_BLOCK_LEFT_CM * pt_per_cm
     info_y_base = COVER_INFO_BLOCK_BOTTOM_CM * pt_per_cm
-    c.setFont(FONT_NAME, COVER_INFO_SIZE_PT)
+    fs_info = COVER_INFO_SIZE_PT
+    leading_info = fs_info * 1.15
+    gap_date = 6
+
+    info_lines = [ln for ln in info_lines_text.splitlines() if ln.strip()]
+
+    y_info = info_y_base
+    for ln in info_lines:
+        c.setFont(FONT_NAME, fs_info)
+        c.drawString(info_x, y_info, ln)
+        y_info += leading_info
+
     if use_today:
+        c.setFont(FONT_NAME, fs_info)
         date_str = english_date_upper() if date_style == "EN" else czech_date()
-        c.drawString(info_x, info_y_base + 3*(COVER_INFO_SIZE_PT+2), date_str)
-        start_y = info_y_base + 2*(COVER_INFO_SIZE_PT+2)
-    else:
-        start_y = info_y_base
-    for i, line in enumerate(info_lines_text.splitlines()):
-        c.drawString(info_x, start_y + i*(COVER_INFO_SIZE_PT+2), line)
+        c.drawString(info_x, y_info + gap_date, date_str)
 
     c.showPage()
-
+    
     # === Komponentové stránky: 4 dlaždice, edge-to-edge, cover ==============
     if order_paths:
         spp = SEGMENTS_PER_PAGE_FIXED  # 4

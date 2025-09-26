@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 from typing import List
+from datetime import date
 
 from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtGui import QPixmap, QImage, QAction
@@ -15,7 +16,7 @@ from PIL.ImageQt import ImageQt
 from config import (
     APP_TITLE, SEGMENT_POOL_DIR,
     MARGIN_CM_DEFAULT, GAP_CM_DEFAULT,
-    A4_W_PT, A4_H_PT, PRICE_IMAGE_START_DIR
+    A4_W_PT, A4_H_PT, PRICE_IMAGE_START_DIR, DEFAULT_EXPORT_DIR
 )
 from widgets.clickable_image import ClickableImage
 from workers.preview_worker import PreviewWorker, PreviewEmitter
@@ -278,7 +279,16 @@ class MainWindow(QMainWindow):
 
     # ---- PDF ----
     def export_pdf(self):
-        out, _ = QFileDialog.getSaveFileName(self, "Uložit PDF", "", "PDF (*.pdf)")
+        # navrhni název v DEFAULT_EXPORT_DIR
+        try:
+            DEFAULT_EXPORT_DIR.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+        suggested = DEFAULT_EXPORT_DIR / f"cenova_nabidka_{date.today().strftime('%Y-%m-%d')}.pdf"
+
+        out, _ = QFileDialog.getSaveFileName(
+            self, "Uložit PDF", str(suggested), "PDF (*.pdf)"
+        )
         if not out:
             return
         try:
@@ -293,9 +303,7 @@ class MainWindow(QMainWindow):
                 use_today=self.chk_today.isChecked(),
                 price_image_path=self.price_image_path or None,
             )
-            # DŘÍVE: QMessageBox.information(...)  -> nechceme
             print(f"[OK] PDF export dokončen: {out}")
         except Exception as e:
-            # Chybu klidně dál ukaž dialogem
             from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Chyba", f"Nepodařilo se vytvořit PDF:\n{e}")

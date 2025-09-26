@@ -62,36 +62,99 @@ class PreviewWorker(QRunnable):
         W, H = img.size
         col = tuple(int(COVER_TITLE_COLOR_HEX[i:i+2], 16) for i in (1,3,5))
 
-        left = int(COVER_SIDE_MARGIN_CM * (W / (A4_W_PT / cm)))
+        # Přepočty cm -> px (podle poměru A4 pt->px)
+        px_per_pt_x = W / A4_W_PT
+        px_per_pt_y = H / A4_H_PT
+        pt_per_cm = 72.0 / 2.54
+        px_per_cm_x = px_per_pt_x * pt_per_cm
+        px_per_cm_y = px_per_pt_y * pt_per_cm
+
+        left = int(COVER_SIDE_MARGIN_CM * px_per_cm_x)
         right = W - left
-        y_top = int(COVER_BAND_TOP_CM * (H / (A4_H_PT / cm)))
-        y_bot = int(COVER_BAND_BOTTOM_CM * (H / (A4_H_PT / cm)))
+        y_top = int(COVER_BAND_TOP_CM * px_per_cm_y)       # horní linka pásu (menší y)
+        y_bot = int(COVER_BAND_BOTTOM_CM * px_per_cm_y)    # dolní linka pásu (větší y)
+        band_h = max(1, y_bot - y_top)
+
+        # linky pásu
         draw.line([(left, y_top), (right, y_top)], fill=col, width=max(1, COVER_LINE_THICKNESS_PT//2 or 1))
         draw.line([(left, y_bot), (right, y_bot)], fill=col, width=max(1, COVER_LINE_THICKNESS_PT//2 or 1))
 
-        try:
-            font = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", COVER_TITLE_SIZE_PT)
-        except Exception:
-            font = ImageFont.load_default()
-        title = (self.title.strip() or "CENOVÁ NABÍDKA").upper()
-        th = ImageDraw.Draw(Image.new("RGB",(1,1))).textbbox((0,0), title, font=font)[3]
-        y_text = (y_top + y_bot - th) // 2
-        draw.text((left, y_text), title, fill=col, font=font)
+        # Helpery
+        def font_px(size_pt):
+            try:
+                return ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", size_pt)
+            except Exception:
+                return ImageFont.load_default()
 
-        try:
-            info_font = ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", COVER_INFO_SIZE_PT)
-        except Exception:
-            info_font = ImageFont.load_default()
-        info_left = int(COVER_INFO_BLOCK_LEFT_CM * (W / (A4_W_PT / cm)))
-        info_bottom = int(COVER_INFO_BLOCK_BOTTOM_CM * (H / (A4_H_PT / cm)))
+        def text_w(s, f):
+            bbox = draw.textbbox((0,0), s, font=f)
+            return bbox[2] - bbox[0]
+
+        def text_h(f):
+            bbox = draw.textbbox((0,0), "Ag", font=f)
+            return bbox[3] - bbox[1]
+
+        # Nadpis: wrap + shrink + centrování
+        title = (self.title.strip() or "CENOVÁ NABÍDKA").upper()
+        fs = COVER_TITLE_SIZE_PT
+        min_fs = 22
+        leading_factor = 1.12
+
+        def wrap_lines_px(text, fs_pt):
+            f = font_px(fs_pt)
+            lines, cur = [], ""
+            max_w = right - left
+            for w in text.split():
+                test = (cur + " " + w).strip()
+                if text_w(test, f) <= max_w:
+                    cur = test
+                else:
+                    if cur:
+                        lines.append(cur)
+                    cur = w
+            if cur:
+                lines.append(cur)
+            return lines, f
+
+        lines, f = wrap_lines_px(title, fs)
+        while True:
+            line_h = int(text_h(f) * leading_factor)
+            if (len(lines) <= 2) and (max(text_w(L, f) for L in lines) <= (right - left)) and (len(lines)*line_h <= band_h):
+                break
+            if fs <= min_fs:
+                break
+            fs -= 1
+            lines, f = wrap_lines_px(title, fs)
+
+        line_h = int(text_h(f) * leading_factor)
+        total_h = len(lines) * line_h
+        y = y_top + (band_h - total_h) // 2  # VERTIKÁLNÍ CENTRUM
+
+        for L in lines:
+            x = left + (right - left - text_w(L, f)) // 2  # HORIZONTÁLNÍ CENTRUM
+            draw.text((x, y), L, fill=col, font=f)
+            y += line_h
+
+        # Spodní blok: datum nad adresou
+        info_left = int(COVER_INFO_BLOCK_LEFT_CM * px_per_cm_x)
+        info_bottom = int(COVER_INFO_BLOCK_BOTTOM_CM * px_per_cm_y)
+        f_info = font_px(COVER_INFO_SIZE_PT)
+        line_h_info = int(text_h(f_info) * 1.15)
+        gap_date = max(4, line_h_info // 3)
+
+        info_lines = [ln for ln in (self.info_text or "").splitlines() if ln.strip()]
+        total_info_h = len(info_lines) * line_h_info
+        y_start = H - info_bottom - total_info_h
+        y_run = y_start
+        for ln in info_lines:
+            draw.text((info_left, y_run), ln, fill=col, font=f_info)
+            y_run += line_h_info
+
         if self.use_today:
             date_str = english_date_upper() if self.date_style == "EN" else czech_date()
-            draw.text((info_left, H - info_bottom - COVER_INFO_SIZE_PT*2), date_str, fill=col, font=info_font)
-            y_start = H - info_bottom - COVER_INFO_SIZE_PT
-        else:
-            y_start = H - info_bottom
-        for i, line in enumerate((self.info_text or "").splitlines()):
-            draw.text((info_left, y_start + i*(COVER_INFO_SIZE_PT+4)), line, fill=col, font=info_font)
+            y_date = y_start - gap_date - (line_h_info - text_h(f_info))
+            draw.text((info_left, max(0, y_date)), date_str, fill=col, font=f_info)
+
         return img
 
     def _render_components_preview_pil(self, paths):
