@@ -7,6 +7,13 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
+def resource_path(*parts) -> Path:
+    """
+    Vrátí cestu k souboru jak v běžném běhu, tak uvnitř PyInstaller bundle.
+    """
+    base = getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)
+    return Path(base).joinpath(*parts)
+
 # ---- App / cesty ----
 APP_TITLE = "Tvorba cenové nabídky (PySide6)"
 SEGMENT_POOL_DIR = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/pool/segmenty")
@@ -15,12 +22,17 @@ SEGMENT_POOL_DIR = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/a
 PRICE_IMAGE_START_DIR = Path("/Users/jirka/Desktop")  # <- změň si
 
 # (Volitelné) vlastní TTF pro PDF i náhledy – nastav absolutní cestu nebo nech None
-CUSTOM_FONT_TTF = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/final/font/times.ttf")
+#CUSTOM_FONT_TTF = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/final/font/times.ttf")
+# (Volitelné) vlastní TTF – vezmeme zabalený font/times.ttf, když existuje
+CUSTOM_FONT_TTF = resource_path("font", "times.ttf")
 
 # Výchozí složka pro export PDF
 DEFAULT_EXPORT_DIR = Path("/Users/jirka/Desktop")  # uprav dle potřeby
 
 COVER_TITLE_OFFSET_MM = -5.0
+
+#margin pouze na segmenty
+COMPONENT_MARGIN_MM = 6.0
 # ---- Layout ----
 SEGMENTS_PER_PAGE_FIXED = 4
 MARGIN_CM_DEFAULT = 2.0

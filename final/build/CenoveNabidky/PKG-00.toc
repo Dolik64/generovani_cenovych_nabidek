@@ -1,0 +1,70 @@
+('/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+ 'generovani/final/build/CenoveNabidky/CenoveNabidky.pkg',
+ {'BINARY': True,
+  'DATA': True,
+  'EXECUTABLE': True,
+  'EXTENSION': True,
+  'PYMODULE': True,
+  'PYSOURCE': True,
+  'PYZ': False,
+  'SPLASH': True,
+  'SYMLINK': False},
+ [('pyi-contents-directory _internal', '', 'OPTION'),
+  ('PYZ-00.pyz',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/build/CenoveNabidky/PYZ-00.pyz',
+   'PYZ'),
+  ('python3.10/lib-dynload/_struct.cpython-310-darwin.so',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload/_struct.cpython-310-darwin.so',
+   'EXTENSION'),
+  ('python3.10/lib-dynload/zlib.cpython-310-darwin.so',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload/zlib.cpython-310-darwin.so',
+   'EXTENSION'),
+  ('struct',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/build/CenoveNabidky/localpycs/struct.pyc',
+   'PYMODULE'),
+  ('pyimod01_archive',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/build/CenoveNabidky/localpycs/pyimod01_archive.pyc',
+   'PYMODULE'),
+  ('pyimod02_importers',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/build/CenoveNabidky/localpycs/pyimod02_importers.pyc',
+   'PYMODULE'),
+  ('pyimod03_ctypes',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/build/CenoveNabidky/localpycs/pyimod03_ctypes.pyc',
+   'PYMODULE'),
+  ('pyiboot01_bootstrap',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PyInstaller/loader/pyiboot01_bootstrap.py',
+   'PYSOURCE'),
+  ('pyi_rth_inspect',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PyInstaller/hooks/rthooks/pyi_rth_inspect.py',
+   'PYSOURCE'),
+  ('pyi_rth_pkgutil',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PyInstaller/hooks/rthooks/pyi_rth_pkgutil.py',
+   'PYSOURCE'),
+  ('pyi_rth_multiprocessing',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PyInstaller/hooks/rthooks/pyi_rth_multiprocessing.py',
+   'PYSOURCE'),
+  ('pyi_rth_pyside6',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PyInstaller/hooks/rthooks/pyi_rth_pyside6.py',
+   'PYSOURCE'),
+  ('app',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/app.py',
+   'PYSOURCE')],
+ 'Python',
+ True,
+ False,
+ False,
+ [],
+ 'arm64',
+ None,
+ None)

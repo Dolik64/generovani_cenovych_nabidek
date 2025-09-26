@@ -22,7 +22,7 @@ from config import (
     COVER_BAND_TOP_CM, COVER_BAND_BOTTOM_CM, COVER_TITLE_SIZE_PT,
     COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT,
     COVER_TITLE_OFFSET_MM,                          # jemný posun nadpisu v mm ( + nahoru )
-    COVER_TOP_LINE_COLOR_HEX, COVER_BOTTOM_LINE_COLOR_HEX,  # barvy linek pásu
+    COVER_TOP_LINE_COLOR_HEX, COVER_BOTTOM_LINE_COLOR_HEX,COMPONENT_MARGIN_MM,  # barvy linek pásu
     # Datumové helpery
     czech_date, english_date_upper,
     # Pevná šířka screenshotu ceníku (v cm)
@@ -150,23 +150,36 @@ def export_pdf(
 
     c.showPage()
 
-    # === Komponentové stránky: 4 dlaždice, edge-to-edge, cover ==============
+        # === Komponentové stránky: 4 dlaždice s marginy v mm, cover-řez =============
     if order_paths:
+        # rozbal margin v bodech
+        def unpack_margin_mm(m):
+            if isinstance(m, (list, tuple)) and len(m) == 4:
+                ml, mt, mr, mb = m
+            else:
+                ml = mt = mr = mb = float(m)
+            return ml * pt_per_mm, mt * pt_per_mm, mr * pt_per_mm, mb * pt_per_mm
+
+        ml_pt, mt_pt, mr_pt, mb_pt = unpack_margin_mm(COMPONENT_MARGIN_MM)
+
+        inner_w = max(1.0, W - ml_pt - mr_pt)
+        inner_h = max(1.0, H - mt_pt - mb_pt)
+
         spp = SEGMENTS_PER_PAGE_FIXED  # 4
         total_pages = math.ceil(len(order_paths) / spp)
-        cell_h_pt = H / spp                       # výška dlaždice v bodech
-        target_ratio = W / cell_h_pt              # poměr w:h dlaždice
+        cell_h_pt = inner_h / spp                       # výška dlaždice uvnitř marginů
+        target_ratio = inner_w / cell_h_pt              # poměr w:h dlaždice (pro cover crop)
 
         for p in range(total_pages):
             start = p * spp
             end = min(start + spp, len(order_paths))
-            y_top = H
+            y_top = H - mt_pt                           # začínáme pod horním marginem
             for path in order_paths[start:end]:
                 im = Image.open(path).convert("RGB")
                 iw, ih = im.size
                 img_ratio = iw / ih
 
-                # cover ořez do poměru W : cell_h_pt (poměr nezávislý na jednotkách)
+                # cover ořez do poměru inner_w : cell_h_pt
                 if img_ratio > target_ratio:
                     new_w = int(ih * target_ratio)
                     x0 = max(0, (iw - new_w) // 2)
@@ -176,12 +189,17 @@ def export_pdf(
                     y0 = max(0, (ih - new_h) // 2)
                     box = (0, y0, iw, y0 + new_h)
 
-                tile = im.crop(box)  # bez resize – ReportLab škáluje při vykreslení
+                tile = im.crop(box)  # bez resamplingu – RL škáluje při kreslení
                 img_reader = ImageReader(tile)
                 y_top -= cell_h_pt
                 c.drawImage(
-                    img_reader, 0, y_top, width=W, height=cell_h_pt,
-                    preserveAspectRatio=False, mask='auto'
+                    img_reader,
+                    ml_pt,                 # x = levý margin
+                    y_top,                 # y v rámci vnitřního obdélníku
+                    width=inner_w,
+                    height=cell_h_pt,
+                    preserveAspectRatio=False,
+                    mask='auto'
                 )
             c.showPage()
 

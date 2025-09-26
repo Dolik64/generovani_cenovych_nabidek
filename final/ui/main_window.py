@@ -233,7 +233,7 @@ class MainWindow(QMainWindow):
             date_style=self.combo_date.currentText(),
             use_today=self.chk_today.isChecked(),
             emitter=self._emitter,
-            width_px=900
+            width_px=1100
         )
         from PySide6.QtCore import QThreadPool
         QThreadPool.globalInstance().start(worker)
