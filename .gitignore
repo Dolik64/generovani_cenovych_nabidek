@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.mypy_cache/
+.pytest_cache/
+*.egg-info/
+
+# Virtuální prostředí
+.venv/
+venv/
+**/.venv/
+**/venv/
+
+# Build/Distribuce
+build/
+dist/
+*.app
+*.dmg
+*.pkg
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Prostředí
+.env
+.env.*
+
+# Qt/PySide drobnosti
+*.qmlc
+*.jsc
+*.pro.user
+*.qrc
