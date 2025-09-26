@@ -16,3 +16,12 @@ zacnu tim ze udelam pouze to klikani aplikaci na klikani na obrazky, o nic jineh
 pozor tyto obrazky budou v png, vsechny maji stejne rozliseni a to 2839 x 1004. tyto obrazky budou vsechny v jedne slozce na kterou chci v kodu mit odkaz pomoci cesty. chci aby tyto obrazky vsechny byly zobrazeny v galerii kde pujde scrollovat a chci aby fungovalo to klikani
 
 pouzivat chci toto PySide6 (Qt)
+
+cd /Users/jirka/Downloads/tvorba\ cenovych\ nabidek/python/aplikace\ na\ generovani/final
+
+pyinstaller \
+  --noconfirm \
+  --windowed \
+  --name "CenoveNabidky" \
+  --add-data "font/times.ttf:font" \
+  app.py
