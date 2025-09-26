@@ -69,7 +69,7 @@
  [],
  False,
  False,
- 1758922829,
+ 1758924400,
  [('runw',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PyInstaller/bootloader/Darwin-64bit/runw',

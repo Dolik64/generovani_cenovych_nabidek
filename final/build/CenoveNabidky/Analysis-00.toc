@@ -488,14 +488,14 @@
   ('multiprocessing',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/__init__.py',
    'PYMODULE'),
-  ('stringprep',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/stringprep.py',
-   'PYMODULE'),
   ('tracemalloc',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/tracemalloc.py',
    'PYMODULE'),
   ('_py_abc',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/_py_abc.py',
+   'PYMODULE'),
+  ('stringprep',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/stringprep.py',
    'PYMODULE'),
   ('ui.main_window',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
@@ -1565,45 +1565,33 @@
  [('Python.framework/Versions/3.10/Python',
    '/Library/Frameworks/Python.framework/Versions/3.10/Python',
    'BINARY'),
-  ('PySide6/Qt/plugins/imageformats/libqmacheif.dylib',
+  ('PySide6/Qt/plugins/platforminputcontexts/libqtvirtualkeyboardplugin.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqmacheif.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/platforminputcontexts/libqtvirtualkeyboardplugin.dylib',
+   'BINARY'),
+  ('PySide6/Qt/plugins/imageformats/libqjpeg.dylib',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqjpeg.dylib',
    'BINARY'),
   ('PySide6/Qt/plugins/imageformats/libqico.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqico.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/platforms/libqcocoa.dylib',
+  ('PySide6/Qt/plugins/iconengines/libqsvgicon.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/platforms/libqcocoa.dylib',
-   'BINARY'),
-  ('PySide6/Qt/plugins/platforms/libqminimal.dylib',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/platforms/libqminimal.dylib',
-   'BINARY'),
-  ('PySide6/Qt/plugins/platforminputcontexts/libqtvirtualkeyboardplugin.dylib',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/platforminputcontexts/libqtvirtualkeyboardplugin.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/iconengines/libqsvgicon.dylib',
    'BINARY'),
   ('PySide6/Qt/plugins/imageformats/libqsvg.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqsvg.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/imageformats/libqwbmp.dylib',
+  ('PySide6/Qt/plugins/platforms/libqoffscreen.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqwbmp.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/platforms/libqoffscreen.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/imageformats/libqtga.dylib',
+  ('PySide6/Qt/plugins/platforms/libqminimal.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqtga.dylib',
-   'BINARY'),
-  ('PySide6/Qt/plugins/imageformats/libqwebp.dylib',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqwebp.dylib',
-   'BINARY'),
-  ('PySide6/Qt/plugins/imageformats/libqpdf.dylib',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqpdf.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/platforms/libqminimal.dylib',
    'BINARY'),
   ('PySide6/Qt/plugins/generic/libqtuiotouchplugin.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
@@ -1613,45 +1601,57 @@
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqgif.dylib',
    'BINARY'),
+  ('PySide6/Qt/plugins/imageformats/libqmacheif.dylib',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqmacheif.dylib',
+   'BINARY'),
   ('PySide6/Qt/plugins/imageformats/libqtiff.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqtiff.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/platforms/libqoffscreen.dylib',
+  ('PySide6/Qt/plugins/imageformats/libqpdf.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/platforms/libqoffscreen.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqpdf.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/imageformats/libqicns.dylib',
+  ('PySide6/Qt/plugins/imageformats/libqtga.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqicns.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqtga.dylib',
    'BINARY'),
   ('PySide6/Qt/plugins/imageformats/libqmacjp2.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqmacjp2.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/imageformats/libqjpeg.dylib',
+  ('PySide6/Qt/plugins/imageformats/libqicns.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqjpeg.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqicns.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/iconengines/libqsvgicon.dylib',
+  ('PySide6/Qt/plugins/imageformats/libqwbmp.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/iconengines/libqsvgicon.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqwbmp.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/networkinformation/libqscnetworkreachability.dylib',
+  ('PySide6/Qt/plugins/platforms/libqcocoa.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/networkinformation/libqscnetworkreachability.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/platforms/libqcocoa.dylib',
    'BINARY'),
-  ('PySide6/Qt/plugins/tls/libqopensslbackend.dylib',
+  ('PySide6/Qt/plugins/imageformats/libqwebp.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/tls/libqopensslbackend.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/imageformats/libqwebp.dylib',
    'BINARY'),
   ('PySide6/Qt/plugins/tls/libqcertonlybackend.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/tls/libqcertonlybackend.dylib',
    'BINARY'),
+  ('PySide6/Qt/plugins/tls/libqopensslbackend.dylib',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/tls/libqopensslbackend.dylib',
+   'BINARY'),
   ('PySide6/Qt/plugins/tls/libqsecuretransportbackend.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/tls/libqsecuretransportbackend.dylib',
+   'BINARY'),
+  ('PySide6/Qt/plugins/networkinformation/libqscnetworkreachability.dylib',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/plugins/networkinformation/libqscnetworkreachability.dylib',
    'BINARY'),
   ('PySide6/Qt/plugins/styles/libqmacstyle.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
@@ -1774,6 +1774,9 @@
   ('python3.10/lib-dynload/_queue.cpython-310-darwin.so',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload/_queue.cpython-310-darwin.so',
    'EXTENSION'),
+  ('python3.10/lib-dynload/_heapq.cpython-310-darwin.so',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload/_heapq.cpython-310-darwin.so',
+   'EXTENSION'),
   ('python3.10/lib-dynload/_multibytecodec.cpython-310-darwin.so',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload/_multibytecodec.cpython-310-darwin.so',
    'EXTENSION'),
@@ -1794,9 +1797,6 @@
    'EXTENSION'),
   ('python3.10/lib-dynload/_codecs_hk.cpython-310-darwin.so',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload/_codecs_hk.cpython-310-darwin.so',
-   'EXTENSION'),
-  ('python3.10/lib-dynload/_heapq.cpython-310-darwin.so',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/lib-dynload/_heapq.cpython-310-darwin.so',
    'EXTENSION'),
   ('PIL/_webp.cpython-310-darwin.so',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
@@ -1870,49 +1870,49 @@
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/QtWidgets.abi3.so',
    'EXTENSION'),
-  ('PySide6/Qt/lib/QtGui.framework/Versions/A/QtGui',
+  ('PySide6/Qt/lib/QtQmlMeta.framework/Versions/A/QtQmlMeta',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtGui.framework/Versions/A/QtGui',
-   'BINARY'),
-  ('PySide6/Qt/lib/QtCore.framework/Versions/A/QtCore',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtCore.framework/Versions/A/QtCore',
-   'BINARY'),
-  ('PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/A/QtVirtualKeyboard',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/A/QtVirtualKeyboard',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtQmlMeta.framework/Versions/A/QtQmlMeta',
    'BINARY'),
   ('PySide6/Qt/lib/QtQuick.framework/Versions/A/QtQuick',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtQuick.framework/Versions/A/QtQuick',
    'BINARY'),
+  ('PySide6/Qt/lib/QtNetwork.framework/Versions/A/QtNetwork',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtNetwork.framework/Versions/A/QtNetwork',
+   'BINARY'),
   ('PySide6/Qt/lib/QtQmlWorkerScript.framework/Versions/A/QtQmlWorkerScript',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtQmlWorkerScript.framework/Versions/A/QtQmlWorkerScript',
    'BINARY'),
-  ('PySide6/Qt/lib/QtOpenGL.framework/Versions/A/QtOpenGL',
+  ('PySide6/Qt/lib/QtGui.framework/Versions/A/QtGui',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtOpenGL.framework/Versions/A/QtOpenGL',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtGui.framework/Versions/A/QtGui',
    'BINARY'),
   ('PySide6/Qt/lib/QtQml.framework/Versions/A/QtQml',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtQml.framework/Versions/A/QtQml',
    'BINARY'),
-  ('PySide6/Qt/lib/QtQmlMeta.framework/Versions/A/QtQmlMeta',
+  ('PySide6/Qt/lib/QtOpenGL.framework/Versions/A/QtOpenGL',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtQmlMeta.framework/Versions/A/QtQmlMeta',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtOpenGL.framework/Versions/A/QtOpenGL',
    'BINARY'),
-  ('PySide6/Qt/lib/QtNetwork.framework/Versions/A/QtNetwork',
+  ('PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/A/QtVirtualKeyboard',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtNetwork.framework/Versions/A/QtNetwork',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/A/QtVirtualKeyboard',
+   'BINARY'),
+  ('PySide6/Qt/lib/QtQmlModels.framework/Versions/A/QtQmlModels',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtQmlModels.framework/Versions/A/QtQmlModels',
    'BINARY'),
   ('PySide6/Qt/lib/QtVirtualKeyboardQml.framework/Versions/A/QtVirtualKeyboardQml',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtVirtualKeyboardQml.framework/Versions/A/QtVirtualKeyboardQml',
    'BINARY'),
-  ('PySide6/Qt/lib/QtQmlModels.framework/Versions/A/QtQmlModels',
+  ('PySide6/Qt/lib/QtCore.framework/Versions/A/QtCore',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtQmlModels.framework/Versions/A/QtQmlModels',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/lib/QtCore.framework/Versions/A/QtCore',
    'BINARY'),
   ('PySide6/Qt/lib/QtSvg.framework/Versions/A/QtSvg',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
@@ -1932,17 +1932,17 @@
   ('libssl.1.1.dylib',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/libssl.1.1.dylib',
    'BINARY'),
-  ('PIL/.dylibs/libwebpmux.3.dylib',
+  ('PIL/.dylibs/libwebpdemux.2.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libwebpmux.3.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libwebpdemux.2.dylib',
    'BINARY'),
   ('PIL/.dylibs/libwebp.7.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libwebp.7.dylib',
    'BINARY'),
-  ('PIL/.dylibs/libwebpdemux.2.dylib',
+  ('PIL/.dylibs/libwebpmux.3.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libwebpdemux.2.dylib',
+   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libwebpmux.3.dylib',
    'BINARY'),
   ('PIL/.dylibs/libavif.16.3.0.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
@@ -1952,6 +1952,18 @@
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/liblcms2.2.dylib',
    'BINARY'),
+  ('PIL/.dylibs/libtiff.6.dylib',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libtiff.6.dylib',
+   'BINARY'),
+  ('PIL/.dylibs/libjpeg.62.4.0.dylib',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libjpeg.62.4.0.dylib',
+   'BINARY'),
+  ('PIL/.dylibs/libxcb.1.1.0.dylib',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libxcb.1.1.0.dylib',
+   'BINARY'),
   ('PIL/.dylibs/libz.1.3.1.zlib-ng.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libz.1.3.1.zlib-ng.dylib',
@@ -1959,18 +1971,6 @@
   ('PIL/.dylibs/libopenjp2.2.5.3.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libopenjp2.2.5.3.dylib',
-   'BINARY'),
-  ('PIL/.dylibs/libjpeg.62.4.0.dylib',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libjpeg.62.4.0.dylib',
-   'BINARY'),
-  ('PIL/.dylibs/libtiff.6.dylib',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libtiff.6.dylib',
-   'BINARY'),
-  ('PIL/.dylibs/libxcb.1.1.0.dylib',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libxcb.1.1.0.dylib',
    'BINARY'),
   ('PIL/.dylibs/libharfbuzz.0.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
@@ -2007,13 +2007,13 @@
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libXau.6.dylib',
    'BINARY'),
-  ('PIL/.dylibs/libpng16.16.dylib',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libpng16.16.dylib',
-   'BINARY'),
   ('PIL/.dylibs/libbrotlidec.1.1.0.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libbrotlidec.1.1.0.dylib',
+   'BINARY'),
+  ('PIL/.dylibs/libpng16.16.dylib',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PIL/.dylibs/libpng16.16.dylib',
    'BINARY'),
   ('PIL/.dylibs/libbrotlicommon.1.1.0.dylib',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
@@ -2025,437 +2025,437 @@
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/font/times.ttf',
    'DATA'),
-  ('PySide6/Qt/translations/qt_lg.qm',
+  ('PySide6/Qt/translations/qt_help_es.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_lg.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_zh_CN.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_zh_CN.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_da.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_da.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_ar.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ar.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_ca.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ca.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_de.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_de.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_pt_BR.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_pt_BR.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_tr.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_tr.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_sv.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_sv.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_lg.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_lg.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_es.qm',
    'DATA'),
   ('PySide6/Qt/translations/qtbase_gd.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_gd.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qt_he.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_he.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_uk.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_uk.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_bg.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_bg.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_zh_TW.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_zh_TW.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_ka.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ka.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_sl.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_sl.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_it.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_it.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_lt.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_lt.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_en.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_en.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_pl.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_pl.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_ko.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ko.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_hu.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_hu.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_ka.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ka.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_fa.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_fa.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_de.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_de.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_he.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_he.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_hu.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_hu.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_pt_BR.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_pt_BR.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_nl.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_nl.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_gl.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_gl.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_ru.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ru.qm',
-   'DATA'),
   ('PySide6/Qt/translations/qt_sv.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_sv.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qt_help_zh_CN.qm',
+  ('PySide6/Qt/translations/qt_help_de.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_zh_CN.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_da.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_da.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_sk.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_sk.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_da.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_da.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_pt_PT.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_pt_PT.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_lv.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_lv.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_cs.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_cs.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_zh_TW.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_zh_TW.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_en.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_en.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_ru.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ru.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_ca.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ca.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_uk.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_uk.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_pt_BR.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_pt_BR.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_es.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_es.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_de.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_de.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_hr.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_hr.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_fi.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_fi.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_nn.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_nn.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_de.qm',
    'DATA'),
   ('PySide6/Qt/translations/qt_sl.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_sl.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qt_help_ja.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ja.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_pl.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_pl.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_fi.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_fi.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_gl.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_gl.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_nn.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_nn.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_sk.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_sk.qm',
-   'DATA'),
   ('PySide6/Qt/translations/qt_bg.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_bg.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qt_help_fr.qm',
+  ('PySide6/Qt/translations/qt_help_it.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_fr.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_it.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qtbase_sv.qm',
+  ('PySide6/Qt/translations/qt_fi.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_sv.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_es.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_es.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_lv.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_lv.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_ko.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ko.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_ru.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ru.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_fr.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_fr.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_en.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_en.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_it.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_it.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_hr.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_hr.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_pl.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_pl.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_ka.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ka.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_tr.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_tr.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_cs.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_cs.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_gd.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_gd.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_hr.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_hr.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_fi.qm',
    'DATA'),
   ('PySide6/Qt/translations/qtbase_zh_TW.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_zh_TW.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qt_help_sk.qm',
+  ('PySide6/Qt/translations/qt_help_ka.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_sk.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ka.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qtbase_fr.qm',
+  ('PySide6/Qt/translations/qt_help_ko.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_fr.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ko.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qtbase_nl.qm',
+  ('PySide6/Qt/translations/qt_ca.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_nl.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ca.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qt_ar.qm',
+  ('PySide6/Qt/translations/qtbase_hu.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ar.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_nl.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_nl.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_ja.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ja.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_ca.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ca.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_zh_CN.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_zh_CN.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_hu.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_hu.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_bg.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_bg.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qtbase_cs.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_cs.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_tr.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_tr.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_help_ar.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ar.qm',
-   'DATA'),
-  ('PySide6/Qt/translations/qt_ko.qm',
-   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ko.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_hu.qm',
    'DATA'),
   ('PySide6/Qt/translations/qt_ja.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ja.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qt_it.qm',
+  ('PySide6/Qt/translations/qtbase_fr.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_it.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_fr.qm',
    'DATA'),
-  ('PySide6/Qt/translations/qt_help_nn.qm',
+  ('PySide6/Qt/translations/qt_lv.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
-   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_nn.qm',
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_lv.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_ar.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ar.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_uk.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_uk.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_hr.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_hr.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_nl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_nl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_hr.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_hr.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_nn.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_nn.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_gd.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_gd.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_lg.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_lg.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_es.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_es.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_bg.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_bg.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_sv.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_sv.qm',
    'DATA'),
   ('PySide6/Qt/translations/qt_help_uk.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_uk.qm',
    'DATA'),
+  ('PySide6/Qt/translations/qtbase_ca.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ca.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_sl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_sl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_lv.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_lv.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_gl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_gl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_ar.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ar.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_hu.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_hu.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_pt_BR.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_pt_BR.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_pt_BR.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_pt_BR.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_lt.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_lt.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_nl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_nl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_fa.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_fa.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_he.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_he.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_pt_PT.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_pt_PT.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_nl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_nl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_nn.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_nn.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_en.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_en.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_he.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_he.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_gl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_gl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_sk.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_sk.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_de.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_de.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_da.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_da.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_fi.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_fi.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_ru.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ru.qm',
+   'DATA'),
   ('PySide6/Qt/translations/qtbase_fa.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_fa.qm',
    'DATA'),
+  ('PySide6/Qt/translations/qtbase_pt_BR.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_pt_BR.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_pl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_pl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_ko.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ko.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_ja.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ja.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_ar.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ar.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_fr.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_fr.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_zh_CN.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_zh_CN.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_tr.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_tr.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_sk.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_sk.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_sk.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_sk.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_pl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_pl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_en.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_en.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_it.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_it.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_ca.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ca.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_da.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_da.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_fr.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_fr.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_de.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_de.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_bg.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_bg.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_hr.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_hr.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_nn.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_nn.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_en.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_en.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_zh_TW.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_zh_TW.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_ru.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ru.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_ka.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_ka.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_cs.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_cs.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_pl.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_pl.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_hu.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_hu.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_tr.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_tr.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_sv.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_sv.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_da.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_da.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_zh_CN.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_zh_CN.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_ja.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ja.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_zh_TW.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_zh_TW.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_ru.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_ru.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_lg.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_lg.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_ko.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ko.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_uk.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_uk.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_it.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_it.qm',
+   'DATA'),
   ('PySide6/Qt/translations/qt_es.qm',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_es.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_cs.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_cs.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_zh_CN.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_zh_CN.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_tr.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_tr.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qt_help_cs.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qt_help_cs.qm',
+   'DATA'),
+  ('PySide6/Qt/translations/qtbase_ka.qm',
+   '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
+   'generovani/final/.venv/lib/python3.10/site-packages/PySide6/Qt/translations/qtbase_ka.qm',
    'DATA'),
   ('Python', 'Python.framework/Versions/3.10/Python', 'SYMLINK'),
   ('base_library.zip',
    '/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na '
    'generovani/final/build/CenoveNabidky/base_library.zip',
    'DATA'),
-  ('QtGui', 'PySide6/Qt/lib/QtGui.framework/Versions/A/QtGui', 'SYMLINK'),
-  ('QtCore', 'PySide6/Qt/lib/QtCore.framework/Versions/A/QtCore', 'SYMLINK'),
-  ('QtVirtualKeyboard',
-   'PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/A/QtVirtualKeyboard',
-   'SYMLINK'),
-  ('QtQuick', 'PySide6/Qt/lib/QtQuick.framework/Versions/A/QtQuick', 'SYMLINK'),
-  ('QtQmlWorkerScript',
-   'PySide6/Qt/lib/QtQmlWorkerScript.framework/Versions/A/QtQmlWorkerScript',
-   'SYMLINK'),
-  ('QtOpenGL',
-   'PySide6/Qt/lib/QtOpenGL.framework/Versions/A/QtOpenGL',
-   'SYMLINK'),
-  ('QtQml', 'PySide6/Qt/lib/QtQml.framework/Versions/A/QtQml', 'SYMLINK'),
   ('QtQmlMeta',
    'PySide6/Qt/lib/QtQmlMeta.framework/Versions/A/QtQmlMeta',
    'SYMLINK'),
+  ('QtQuick', 'PySide6/Qt/lib/QtQuick.framework/Versions/A/QtQuick', 'SYMLINK'),
   ('QtNetwork',
    'PySide6/Qt/lib/QtNetwork.framework/Versions/A/QtNetwork',
    'SYMLINK'),
-  ('QtVirtualKeyboardQml',
-   'PySide6/Qt/lib/QtVirtualKeyboardQml.framework/Versions/A/QtVirtualKeyboardQml',
+  ('QtQmlWorkerScript',
+   'PySide6/Qt/lib/QtQmlWorkerScript.framework/Versions/A/QtQmlWorkerScript',
+   'SYMLINK'),
+  ('QtGui', 'PySide6/Qt/lib/QtGui.framework/Versions/A/QtGui', 'SYMLINK'),
+  ('QtQml', 'PySide6/Qt/lib/QtQml.framework/Versions/A/QtQml', 'SYMLINK'),
+  ('QtOpenGL',
+   'PySide6/Qt/lib/QtOpenGL.framework/Versions/A/QtOpenGL',
+   'SYMLINK'),
+  ('QtVirtualKeyboard',
+   'PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/A/QtVirtualKeyboard',
    'SYMLINK'),
   ('QtQmlModels',
    'PySide6/Qt/lib/QtQmlModels.framework/Versions/A/QtQmlModels',
    'SYMLINK'),
+  ('QtVirtualKeyboardQml',
+   'PySide6/Qt/lib/QtVirtualKeyboardQml.framework/Versions/A/QtVirtualKeyboardQml',
+   'SYMLINK'),
+  ('QtCore', 'PySide6/Qt/lib/QtCore.framework/Versions/A/QtCore', 'SYMLINK'),
   ('QtSvg', 'PySide6/Qt/lib/QtSvg.framework/Versions/A/QtSvg', 'SYMLINK'),
   ('QtPdf', 'PySide6/Qt/lib/QtPdf.framework/Versions/A/QtPdf', 'SYMLINK'),
   ('QtWidgets',
    'PySide6/Qt/lib/QtWidgets.framework/Versions/A/QtWidgets',
    'SYMLINK'),
-  ('libwebpmux.3.dylib', 'PIL/.dylibs/libwebpmux.3.dylib', 'SYMLINK'),
-  ('libwebp.7.dylib', 'PIL/.dylibs/libwebp.7.dylib', 'SYMLINK'),
   ('libwebpdemux.2.dylib', 'PIL/.dylibs/libwebpdemux.2.dylib', 'SYMLINK'),
+  ('libwebp.7.dylib', 'PIL/.dylibs/libwebp.7.dylib', 'SYMLINK'),
+  ('libwebpmux.3.dylib', 'PIL/.dylibs/libwebpmux.3.dylib', 'SYMLINK'),
   ('libavif.16.3.0.dylib', 'PIL/.dylibs/libavif.16.3.0.dylib', 'SYMLINK'),
   ('liblcms2.2.dylib', 'PIL/.dylibs/liblcms2.2.dylib', 'SYMLINK'),
+  ('libtiff.6.dylib', 'PIL/.dylibs/libtiff.6.dylib', 'SYMLINK'),
+  ('libjpeg.62.4.0.dylib', 'PIL/.dylibs/libjpeg.62.4.0.dylib', 'SYMLINK'),
+  ('libxcb.1.1.0.dylib', 'PIL/.dylibs/libxcb.1.1.0.dylib', 'SYMLINK'),
   ('libz.1.3.1.zlib-ng.dylib',
    'PIL/.dylibs/libz.1.3.1.zlib-ng.dylib',
    'SYMLINK'),
   ('libopenjp2.2.5.3.dylib', 'PIL/.dylibs/libopenjp2.2.5.3.dylib', 'SYMLINK'),
-  ('libjpeg.62.4.0.dylib', 'PIL/.dylibs/libjpeg.62.4.0.dylib', 'SYMLINK'),
-  ('libtiff.6.dylib', 'PIL/.dylibs/libtiff.6.dylib', 'SYMLINK'),
-  ('libxcb.1.1.0.dylib', 'PIL/.dylibs/libxcb.1.1.0.dylib', 'SYMLINK'),
   ('libharfbuzz.0.dylib', 'PIL/.dylibs/libharfbuzz.0.dylib', 'SYMLINK'),
   ('libfreetype.6.dylib', 'PIL/.dylibs/libfreetype.6.dylib', 'SYMLINK'),
   ('libshiboken6.abi3.6.9.dylib',
@@ -2466,10 +2466,10 @@
   ('libsharpyuv.0.dylib', 'PIL/.dylibs/libsharpyuv.0.dylib', 'SYMLINK'),
   ('liblzma.5.dylib', 'PIL/.dylibs/liblzma.5.dylib', 'SYMLINK'),
   ('libXau.6.dylib', 'PIL/.dylibs/libXau.6.dylib', 'SYMLINK'),
-  ('libpng16.16.dylib', 'PIL/.dylibs/libpng16.16.dylib', 'SYMLINK'),
   ('libbrotlidec.1.1.0.dylib',
    'PIL/.dylibs/libbrotlidec.1.1.0.dylib',
    'SYMLINK'),
+  ('libpng16.16.dylib', 'PIL/.dylibs/libpng16.16.dylib', 'SYMLINK'),
   ('libbrotlicommon.1.1.0.dylib',
    'PIL/.dylibs/libbrotlicommon.1.1.0.dylib',
    'SYMLINK'),
@@ -2642,11 +2642,32 @@
    '/Library/Frameworks/Python.framework/Versions/3.10/Resources/Info.plist',
    'DATA'),
   ('Python.framework/Versions/Current', '3.10', 'SYMLINK')],
- [('genericpath',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/genericpath.py',
+ [('warnings',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/warnings.py',
    'PYMODULE'),
   ('re',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/re.py',
+   'PYMODULE'),
+  ('io',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/io.py',
+   'PYMODULE'),
+  ('abc',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/abc.py',
+   'PYMODULE'),
+  ('heapq',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/heapq.py',
+   'PYMODULE'),
+  ('linecache',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/linecache.py',
+   'PYMODULE'),
+  ('weakref',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/weakref.py',
+   'PYMODULE'),
+  ('sre_constants',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_constants.py',
+   'PYMODULE'),
+  ('keyword',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/keyword.py',
    'PYMODULE'),
   ('encodings.zlib_codec',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/encodings/zlib_codec.py',
@@ -3014,17 +3035,53 @@
   ('encodings',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/encodings/__init__.py',
    'PYMODULE'),
-  ('codecs',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/codecs.py',
+  ('enum',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/enum.py',
+   'PYMODULE'),
+  ('stat',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/stat.py',
    'PYMODULE'),
   ('sre_compile',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py',
    'PYMODULE'),
+  ('traceback',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/traceback.py',
+   'PYMODULE'),
+  ('copyreg',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/copyreg.py',
+   'PYMODULE'),
+  ('os',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/os.py',
+   'PYMODULE'),
+  ('ntpath',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/ntpath.py',
+   'PYMODULE'),
+  ('genericpath',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/genericpath.py',
+   'PYMODULE'),
+  ('reprlib',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/reprlib.py',
+   'PYMODULE'),
+  ('operator',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/operator.py',
+   'PYMODULE'),
+  ('posixpath',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py',
+   'PYMODULE'),
+  ('codecs',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/codecs.py',
+   'PYMODULE'),
   ('sre_parse',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py',
    'PYMODULE'),
-  ('keyword',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/keyword.py',
+  ('types',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/types.py',
+   'PYMODULE'),
+  ('locale',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/locale.py',
+   'PYMODULE'),
+  ('functools',
+   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/functools.py',
    'PYMODULE'),
   ('collections.abc',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/collections/abc.py',
@@ -3032,66 +3089,9 @@
   ('collections',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/collections/__init__.py',
    'PYMODULE'),
-  ('stat',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/stat.py',
-   'PYMODULE'),
   ('_weakrefset',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/_weakrefset.py',
    'PYMODULE'),
-  ('reprlib',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/reprlib.py',
-   'PYMODULE'),
-  ('functools',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/functools.py',
-   'PYMODULE'),
   ('_collections_abc',
    '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/_collections_abc.py',
-   'PYMODULE'),
-  ('copyreg',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/copyreg.py',
-   'PYMODULE'),
-  ('traceback',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/traceback.py',
-   'PYMODULE'),
-  ('posixpath',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py',
-   'PYMODULE'),
-  ('locale',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/locale.py',
-   'PYMODULE'),
-  ('sre_constants',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_constants.py',
-   'PYMODULE'),
-  ('operator',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/operator.py',
-   'PYMODULE'),
-  ('linecache',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/linecache.py',
-   'PYMODULE'),
-  ('warnings',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/warnings.py',
-   'PYMODULE'),
-  ('ntpath',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/ntpath.py',
-   'PYMODULE'),
-  ('os',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/os.py',
-   'PYMODULE'),
-  ('weakref',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/weakref.py',
-   'PYMODULE'),
-  ('io',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/io.py',
-   'PYMODULE'),
-  ('types',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/types.py',
-   'PYMODULE'),
-  ('heapq',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/heapq.py',
-   'PYMODULE'),
-  ('abc',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/abc.py',
-   'PYMODULE'),
-  ('enum',
-   '/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/enum.py',
    'PYMODULE')])
