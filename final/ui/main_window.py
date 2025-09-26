@@ -15,10 +15,10 @@ from PIL.ImageQt import ImageQt
 from config import (
     APP_TITLE, SEGMENT_POOL_DIR,
     MARGIN_CM_DEFAULT, GAP_CM_DEFAULT,
-    A4_W_PT, A4_H_PT
+    A4_W_PT, A4_H_PT, PRICE_IMAGE_START_DIR
 )
 from widgets.clickable_image import ClickableImage
-from workers.preview_worker import PreviewWorker
+from workers.preview_worker import PreviewWorker, PreviewEmitter
 from pdf.export import export_pdf
 
 class MainWindow(QMainWindow):
@@ -27,32 +27,22 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(APP_TITLE)
         self.resize(1280, 860)
 
-        # Stav
         self.price_image_path: str = ""
-        self.preview_pages = []  # list PIL.Image
+        self.preview_pages = []
 
-        # Debounce pro náhled
         self._preview_timer = QTimer(self)
         self._preview_timer.setSingleShot(True)
         self._preview_timer.setInterval(140)
         self._preview_timer.timeout.connect(self.build_preview_async)
 
-        # ---------------------------- UI ---------------------------- #
-        # Horní panel
+        # --- Horní panel (bez okrajů/mezery) ---
         top_bar = QWidget(); lay_top = QHBoxLayout(top_bar)
         btn_load = QPushButton("Načíst složku se segmenty (PNG)")
         btn_price = QPushButton("Načíst obrázek cenové tabulky")
         btn_pdf = QPushButton("Export PDF…")
-        lay_top.addWidget(btn_load); lay_top.addWidget(btn_price); lay_top.addStretch()
-        lay_top.addWidget(QLabel("Okraj (cm):"))
-        self.spin_margin = QDoubleSpinBox(); self.spin_margin.setRange(0,5); self.spin_margin.setSingleStep(0.5); self.spin_margin.setValue(MARGIN_CM_DEFAULT)
-        lay_top.addWidget(self.spin_margin)
-        lay_top.addWidget(QLabel("Mezera (cm):"))
-        self.spin_gap = QDoubleSpinBox(); self.spin_gap.setRange(0,3); self.spin_gap.setSingleStep(0.5); self.spin_gap.setValue(GAP_CM_DEFAULT)
-        lay_top.addWidget(self.spin_gap)
-        lay_top.addWidget(btn_pdf)
+        lay_top.addWidget(btn_load); lay_top.addWidget(btn_price); lay_top.addStretch(); lay_top.addWidget(btn_pdf)
 
-        # Titulní strana
+        # --- Titulní strana ---
         cover_box = QGroupBox("Titulní strana"); lay_cover = QGridLayout(cover_box)
         self.edit_title = QLineEdit("CENOVÁ NABÍDKA SIMULÁTORU")
         self.edit_info = QTextEdit(); self.edit_info.setPlainText("Jiří Doležal\nNad Hrádkem 284\n25226 Kosoř")
@@ -62,7 +52,7 @@ class MainWindow(QMainWindow):
         lay_cover.addWidget(QLabel("Blok adresy (multi-řádek):"), 1, 0); lay_cover.addWidget(self.edit_info, 1, 1, 1, 3)
         lay_cover.addWidget(QLabel("Datum:"), 0, 4); lay_cover.addWidget(self.combo_date, 0, 5); lay_cover.addWidget(self.chk_today, 0, 6)
 
-        # Galerie
+        # --- Galerie / Pořadí / Náhled (beze změn) ---
         self.gallery_scroll = QScrollArea(); self.gallery_scroll.setWidgetResizable(True)
         self.gallery_scroll.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         self.gallery_content = QWidget()
@@ -72,17 +62,14 @@ class MainWindow(QMainWindow):
         self._item_by_path: dict[str, ClickableImage] = {}
         left_box = QWidget(); left_lay = QVBoxLayout(left_box); left_lay.addWidget(QLabel("Galerie segmentů")); left_lay.addWidget(self.gallery_scroll)
 
-        # Pořadí
         mid_box = QWidget(); lay_mid = QVBoxLayout(mid_box)
         lay_mid.addWidget(QLabel("Vybrané (pořadí) – 4/stranu"))
         self.order_list = QListWidget(); lay_mid.addWidget(self.order_list)
-        row_btns = QHBoxLayout()
-        btn_up = QPushButton("Nahoru"); btn_dn = QPushButton("Dolů"); btn_rm = QPushButton("Odebrat")
+        row_btns = QHBoxLayout(); btn_up = QPushButton("Nahoru"); btn_dn = QPushButton("Dolů"); btn_rm = QPushButton("Odebrat")
         row_btns.addWidget(btn_up); row_btns.addWidget(btn_dn); row_btns.addWidget(btn_rm); lay_mid.addLayout(row_btns)
         row_btns2 = QHBoxLayout(); btn_all = QPushButton("Vybrat vše"); btn_clr = QPushButton("Zrušit výběr")
         row_btns2.addWidget(btn_all); row_btns2.addWidget(btn_clr); lay_mid.addLayout(row_btns2)
 
-        # Náhled
         right_box = QWidget(); lay_right = QVBoxLayout(right_box)
         top_preview = QHBoxLayout(); top_preview.addWidget(QLabel("Stránka:"))
         self.page_combo = QComboBox(); self.page_combo.addItem("1")
@@ -94,7 +81,6 @@ class MainWindow(QMainWindow):
 
         central = QWidget(); v = QVBoxLayout(central); v.addWidget(top_bar); v.addWidget(cover_box); v.addWidget(splitter); self.setCentralWidget(central)
 
-        # Menu
         self._make_menu()
 
         # Signály
@@ -102,22 +88,19 @@ class MainWindow(QMainWindow):
         btn_price.clicked.connect(self.load_price_image)
         btn_pdf.clicked.connect(self.export_pdf)
 
-        btn_up.clicked.connect(self.move_up)
-        btn_dn.clicked.connect(self.move_down)
-        btn_rm.clicked.connect(self.remove_from_order)
-
-        btn_all.clicked.connect(self.select_all)
-        btn_clr.clicked.connect(self.clear_selection)
+        btn_up.clicked.connect(self.move_up); btn_dn.clicked.connect(self.move_down); btn_rm.clicked.connect(self.remove_from_order)
+        btn_all.clicked.connect(self.select_all); btn_clr.clicked.connect(self.clear_selection)
 
         self.page_combo.currentIndexChanged.connect(self.show_preview_page)
-        self.spin_margin.valueChanged.connect(self.schedule_preview)
-        self.spin_gap.valueChanged.connect(self.schedule_preview)
         self.edit_title.textChanged.connect(self.schedule_preview)
         self.edit_info.textChanged.connect(self.schedule_preview)
         self.combo_date.currentTextChanged.connect(self.schedule_preview)
         self.chk_today.toggled.connect(self.schedule_preview)
 
-        # Přednačtení
+        # Most signálu z workeru
+        self._emitter = PreviewEmitter()
+        self._emitter.pages_ready.connect(self.accept_preview_pages)
+
         if SEGMENT_POOL_DIR.exists():
             self.load_segments_dir(SEGMENT_POOL_DIR)
 
@@ -241,18 +224,16 @@ class MainWindow(QMainWindow):
     def build_preview_async(self):
         worker = PreviewWorker(
             order_paths=self._order_paths(),
-            margin_cm=float(self.spin_margin.value()),
-            gap_cm=float(self.spin_gap.value()),
+            margin_cm=0.0,
+            gap_cm=0.0,
             price_path=self.price_image_path,
             title=self.edit_title.text(),
             info_text=self.edit_info.toPlainText(),
             date_style=self.combo_date.currentText(),
             use_today=self.chk_today.isChecked(),
-            receiver=self,
-            slot_name="accept_preview_pages",
+            emitter=self._emitter,
             width_px=900
         )
-        # QRunnable spustí globální thread pool
         from PySide6.QtCore import QThreadPool
         QThreadPool.globalInstance().start(worker)
 
@@ -284,8 +265,13 @@ class MainWindow(QMainWindow):
 
     # ---- Ceník ----
     def load_price_image(self):
-        p, _ = QFileDialog.getOpenFileName(self, "Vyber obrázek s cenovou tabulkou",
-                                           "", "Obrázky (*.png *.jpg *.jpeg *.webp *.tif *.tiff)")
+        start_dir = str(PRICE_IMAGE_START_DIR) if PRICE_IMAGE_START_DIR and PRICE_IMAGE_START_DIR.exists() else ""
+        p, _ = QFileDialog.getOpenFileName(
+            self,
+            "Vyber obrázek s cenovou tabulkou",
+            start_dir,  # <- startovní adresář
+            "Obrázky (*.png *.jpg *.jpeg *.webp *.tif *.tiff)"
+        )
         if p:
             self.price_image_path = p
             self.schedule_preview()
@@ -293,19 +279,23 @@ class MainWindow(QMainWindow):
     # ---- PDF ----
     def export_pdf(self):
         out, _ = QFileDialog.getSaveFileName(self, "Uložit PDF", "", "PDF (*.pdf)")
-        if not out: return
+        if not out:
+            return
         try:
             export_pdf(
                 out_path=out,
                 order_paths=self._order_paths(),
-                margin_cm=float(self.spin_margin.value()),
-                gap_cm=float(self.spin_gap.value()),
+                margin_cm=0.0,
+                gap_cm=0.0,
                 title_text=self.edit_title.text(),
                 info_lines_text=self.edit_info.toPlainText(),
                 date_style=self.combo_date.currentText(),
                 use_today=self.chk_today.isChecked(),
                 price_image_path=self.price_image_path or None,
             )
-            QMessageBox.information(self, "Hotovo", f"PDF bylo vytvořeno:\n{out}")
+            # DŘÍVE: QMessageBox.information(...)  -> nechceme
+            print(f"[OK] PDF export dokončen: {out}")
         except Exception as e:
+            # Chybu klidně dál ukaž dialogem
+            from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Chyba", f"Nepodařilo se vytvořit PDF:\n{e}")

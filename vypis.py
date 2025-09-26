@@ -172,6 +172,7 @@ def dump_folder(root: Path, out_file: Path) -> None:
             out.write(f"\n----- END: {rel.as_posix()} -----\n")
 
 def main():
+    
     parser = argparse.ArgumentParser(description="Vytvoří textový dump obsahu složky (strom + obsah souborů).")
     parser.add_argument(
         "--folder", "-f",

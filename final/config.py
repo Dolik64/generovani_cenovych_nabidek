@@ -11,11 +11,21 @@ from reportlab.pdfbase.ttfonts import TTFont
 APP_TITLE = "Tvorba cenové nabídky (PySide6)"
 SEGMENT_POOL_DIR = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/pool/segmenty")
 
+# Startovní složka při volbě screenshotu ceníku (otevře se přímo sem)
+PRICE_IMAGE_START_DIR = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/screenshoty_cenik")  # <- změň si
+
+# (Volitelné) vlastní TTF pro PDF i náhledy – nastav absolutní cestu nebo nech None
+CUSTOM_FONT_TTF = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/final/font/times.ttf")
+
 # ---- Layout ----
 SEGMENTS_PER_PAGE_FIXED = 4
 MARGIN_CM_DEFAULT = 2.0
 GAP_CM_DEFAULT = 0.5
 PRICE_TOP_OFFSET_CM = 2
+#tady se upravuje odsazeni
+
+# Pevná šířka screenshotu ceníku (v cm)
+PRICE_IMAGE_WIDTH_CM = 13.0
 
 # A4
 A4_W_PT, A4_H_PT = A4
@@ -44,9 +54,21 @@ def english_date_upper(d=None):
 
 def try_register_font():
     """
-    Zkusí registrovat DejaVuSans.ttf ležící vedle appky, jinak vrátí Helvetica.
-    Vrací (font_name, ttf_path | None).
+    Vrací (font_name, ttf_path|None). Preferuje CUSTOM_FONT_TTF,
+    pak DejaVuSans.ttf vedle configu, jinak spadne na Helvetica.
     """
+    # 1) explicitně zadaný TTF
+    if CUSTOM_FONT_TTF:
+        p = Path(CUSTOM_FONT_TTF)
+        if p.exists():
+            name = p.stem
+            try:
+                pdfmetrics.registerFont(TTFont(name, str(p)))
+                return name, str(p)
+            except Exception:
+                pass
+
+    # 2) DejaVuSans.ttf vedle config.py
     ttf_path = Path(__file__).with_name("DejaVuSans.ttf")
     if ttf_path.exists():
         try:
@@ -54,6 +76,8 @@ def try_register_font():
             return "DejaVuSans", str(ttf_path)
         except Exception:
             pass
+
+    # 3) fallback
     return "Helvetica", None
 
 # Předregistruj (nevadí volat víckrát)

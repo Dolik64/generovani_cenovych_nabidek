@@ -2,37 +2,39 @@
 import math
 import os
 from typing import List
-from PySide6.QtCore import QRunnable, Qt, QMetaObject, Q_ARG
+
+from PySide6.QtCore import QRunnable, QObject, Signal
 from PIL import Image, ImageDraw, ImageFont
+from reportlab.lib.units import cm
 
 from config import (
     A4_W_PT, A4_H_PT, SEGMENTS_PER_PAGE_FIXED, PRICE_TOP_OFFSET_CM,
     COVER_TITLE_COLOR_HEX, COVER_LINE_THICKNESS_PT, COVER_SIDE_MARGIN_CM,
     COVER_BAND_TOP_CM, COVER_BAND_BOTTOM_CM, COVER_TITLE_SIZE_PT,
     COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT,
-    PREVIEW_TTF, czech_date, english_date_upper
+    PREVIEW_TTF,PRICE_IMAGE_WIDTH_CM, czech_date, english_date_upper
 )
-from reportlab.lib.units import cm
+
+class PreviewEmitter(QObject):
+    pages_ready = Signal(list)  # list PIL.Image
 
 class PreviewWorker(QRunnable):
     """
-    Staví PIL náhledové stránky na pozadí a předá list PIL.Image zpět do GUI vlákna.
+    Staví PIL náhledové stránky na pozadí a po dokončení emituje pages_ready(list).
+    Komponentové stránky: 4 dlaždice na výšku, bez okrajů a mezer (edge-to-edge, cover).
     """
     def __init__(self, order_paths: List[str], margin_cm: float, gap_cm: float,
                  price_path: str, title: str, info_text: str,
                  date_style: str, use_today: bool,
-                 receiver: object, slot_name: str, width_px: int = 900):
+                 emitter: PreviewEmitter, width_px: int = 900):
         super().__init__()
         self.order_paths = order_paths
-        self.margin_cm = margin_cm
-        self.gap_cm = gap_cm
         self.price_path = price_path
         self.title = title
         self.info_text = info_text
         self.date_style = date_style
         self.use_today = use_today
-        self.receiver = receiver
-        self.slot_name = slot_name
+        self.emitter = emitter
         self.width_px = width_px
 
     def run(self):
@@ -45,8 +47,7 @@ class PreviewWorker(QRunnable):
             paths = self.order_paths[p*spp:(p+1)*spp]
             pages.append(self._render_components_preview_pil(paths))
         pages.append(self._render_price_preview_pil())
-
-        QMetaObject.invokeMethod(self.receiver, self.slot_name, Qt.QueuedConnection, Q_ARG(object, pages))
+        self.emitter.pages_ready.emit(pages)
 
     # ---- helpers ----
     def _blank_a4(self):
@@ -94,40 +95,68 @@ class PreviewWorker(QRunnable):
         return img
 
     def _render_components_preview_pil(self, paths):
+        """
+        4 dlaždice přes celou šířku, rovnoměrně na výšku, cover (ořez bez deformace),
+        žádné okraje/mezeru.
+        """
         img = self._blank_a4()
-        draw = ImageDraw.Draw(img)
         W, H = img.size
-        margin_px = int(self.margin_cm * (W / (A4_W_PT / cm)))
-        gap_px = int(self.gap_cm * (W / (A4_W_PT / cm)))
-        usable_w = W - 2*margin_px
-        usable_h = H - 2*margin_px
-        total_gap = gap_px * 3  # 4 na stranu => 3 mezery
-        max_item_h = max(10, (usable_h - total_gap) // SEGMENTS_PER_PAGE_FIXED)
-        y = margin_px
+        draw = ImageDraw.Draw(img)
+        cell_h = H // SEGMENTS_PER_PAGE_FIXED
+        y = 0
+
+        target_ratio = W / cell_h  # poměr stran dlaždice
+
         for p in paths:
             try:
                 im = Image.open(p).convert("RGB")
             except Exception:
                 im = Image.new("RGB", (2839, 1004), "lightgray")
-            w0, h0 = im.size
-            scale = min(usable_w / w0, max_item_h / h0)
-            nw, nh = max(1, int(w0*scale)), max(1, int(h0*scale))
-            im2 = im.resize((nw, nh), Image.BILINEAR)
-            x = margin_px + (usable_w - nw)//2
-            img.paste(im2, (x, y))
-            y += nh + gap_px
-        draw.rectangle([0,0,W-1,H-1], outline="#dddddd")
+
+            iw, ih = im.size
+            img_ratio = iw / ih
+
+            # cover crop na poměr W:cell_h
+            if img_ratio > target_ratio:
+                # příliš široké -> ořež šířku
+                new_w = int(ih * target_ratio)
+                x0 = max(0, (iw - new_w) // 2)
+                box = (x0, 0, x0 + new_w, ih)
+            else:
+                # příliš vysoké -> ořež výšku
+                new_h = int(iw / target_ratio)
+                y0 = max(0, (ih - new_h) // 2)
+                box = (0, y0, iw, y0 + new_h)
+
+            tile = im.crop(box).resize((W, cell_h), Image.LANCZOS)
+            img.paste(tile, (0, y))
+            y += cell_h
+
+        # žádná bordura – celé edge-to-edge
         return img
 
     def _render_price_preview_pil(self):
+        """
+        Poslední stránka: horní odsazení v cm; šířka screenshotu pevně PRICE_IMAGE_WIDTH_CM,
+        výška se dopočítá. Pokud by výška přesáhla dostupný prostor, zmenší se (šířka < 15 cm).
+        """
         img = self._blank_a4()
-        draw = ImageDraw.Draw(img)
         W, H = img.size
-        margin_px = int(self.margin_cm * (W / (A4_W_PT / cm)))
-        top_offset_px = int(PRICE_TOP_OFFSET_CM * (H / (A4_H_PT / cm)))
-        max_w = W - 2*margin_px
-        max_h = H - top_offset_px - margin_px
 
+        # převod cm->px: vycházej z rozměru náhledu (W,H) vs. A4 v bodech
+        px_per_pt_x = W / A4_W_PT
+        px_per_pt_y = H / A4_H_PT
+        pt_per_cm = 72.0 / 2.54
+        px_per_cm_x = px_per_pt_x * pt_per_cm
+        px_per_cm_y = px_per_pt_y * pt_per_cm
+
+        top_offset_px = int(PRICE_TOP_OFFSET_CM * px_per_cm_y)
+        target_w_px  = int(PRICE_IMAGE_WIDTH_CM * px_per_cm_x)
+        max_h_px     = H - top_offset_px
+
+        # načti/placeholder
+        from PIL import Image, ImageDraw, ImageFont
+        import os
         if self.price_path and os.path.exists(self.price_path):
             try:
                 im = Image.open(self.price_path).convert("RGB")
@@ -145,11 +174,18 @@ class PreviewWorker(QRunnable):
             pd.text(((1200-tw)//2, (800-th)//2), text, fill="black", font=font)
 
         w0, h0 = im.size
-        scale = min(max_w / w0, max_h / h0, 1.0)
-        nw, nh = int(w0*scale), int(h0*scale)
+
+        # fit-to-width (15 cm), případně cap na výšku
+        scale_w = target_w_px / w0
+        target_h_px = int(h0 * scale_w)
+        if target_h_px > max_h_px:
+            scale = max_h_px / h0
+        else:
+            scale = scale_w
+
+        nw, nh = max(1, int(w0*scale)), max(1, int(h0*scale))
         im2 = im.resize((nw, nh), Image.BILINEAR)
         x = (W - nw)//2
         y = top_offset_px
         img.paste(im2, (x, y))
-        draw.rectangle([0,0,W-1,H-1], outline="#dddddd")
         return img
