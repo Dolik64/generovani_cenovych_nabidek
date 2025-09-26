@@ -12,7 +12,7 @@ APP_TITLE = "Tvorba cenové nabídky (PySide6)"
 SEGMENT_POOL_DIR = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/pool/segmenty")
 
 # Startovní složka při volbě screenshotu ceníku (otevře se přímo sem)
-PRICE_IMAGE_START_DIR = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/screenshoty_cenik")  # <- změň si
+PRICE_IMAGE_START_DIR = Path("/Users/jirka/Desktop")  # <- změň si
 
 # (Volitelné) vlastní TTF pro PDF i náhledy – nastav absolutní cestu nebo nech None
 CUSTOM_FONT_TTF = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/aplikace na generovani/final/font/times.ttf")
