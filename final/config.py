@@ -20,7 +20,7 @@ CUSTOM_FONT_TTF = Path("/Users/jirka/Downloads/tvorba cenovych nabidek/python/ap
 # Výchozí složka pro export PDF
 DEFAULT_EXPORT_DIR = Path("/Users/jirka/Desktop")  # uprav dle potřeby
 
-COVER_TITLE_OFFSET_MM = 20.0
+COVER_TITLE_OFFSET_MM = -5.0
 # ---- Layout ----
 SEGMENTS_PER_PAGE_FIXED = 4
 MARGIN_CM_DEFAULT = 2.0
@@ -36,6 +36,10 @@ A4_W_PT, A4_H_PT = A4
 
 # ---- Titulní strana ----
 COVER_TITLE_COLOR_HEX = "#2E6F82"
+
+COVER_TOP_LINE_COLOR_HEX = "#FFFFFF"
+COVER_BOTTOM_LINE_COLOR_HEX = COVER_TITLE_COLOR_HEX
+
 COVER_LINE_THICKNESS_PT = 1
 COVER_SIDE_MARGIN_CM = 1.2
 COVER_BAND_TOP_CM = 4.5

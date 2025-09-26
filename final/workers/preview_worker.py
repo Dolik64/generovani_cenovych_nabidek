@@ -12,7 +12,8 @@ from config import (
     COVER_TITLE_COLOR_HEX, COVER_LINE_THICKNESS_PT, COVER_SIDE_MARGIN_CM,
     COVER_BAND_TOP_CM, COVER_BAND_BOTTOM_CM, COVER_TITLE_SIZE_PT,
     COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT,
-    PREVIEW_TTF, PRICE_IMAGE_WIDTH_CM, COVER_TITLE_OFFSET_MM, czech_date, english_date_upper
+    PREVIEW_TTF, PRICE_IMAGE_WIDTH_CM, COVER_TITLE_OFFSET_MM, czech_date, english_date_upper,
+    COVER_TOP_LINE_COLOR_HEX, COVER_BOTTOM_LINE_COLOR_HEX,
 )
 
 class PreviewEmitter(QObject):
@@ -62,33 +63,39 @@ class PreviewWorker(QRunnable):
         img = self._blank_a4()
         draw = ImageDraw.Draw(img)
         W, H = img.size
-        col = tuple(int(COVER_TITLE_COLOR_HEX[i:i+2], 16) for i in (1, 3, 5))
 
-        # Přepočty A4 pt -> px a cm/mm -> px
+        # Barvy
+        def hex_to_rgb(h): return tuple(int(h[i:i+2], 16) for i in (1, 3, 5))
+        col_title = hex_to_rgb(COVER_TITLE_COLOR_HEX)   # pro text a spodní linku
+        col_top   = (255, 255, 255)                    # horní linka "neviditelně" bílá
+
+        # Převody jednotek (pt -> px, cm/mm -> px)
         px_per_pt_x = W / A4_W_PT
         px_per_pt_y = H / A4_H_PT
-        pt_per_cm = 72.0 / 2.54
-        pt_per_mm = 72.0 / 25.4
+        pt_per_cm   = 72.0 / 2.54
+        pt_per_mm   = 72.0 / 25.4
         px_per_cm_x = px_per_pt_x * pt_per_cm
         px_per_cm_y = px_per_pt_y * pt_per_cm
-        px_per_mm   = px_per_pt_y * pt_per_mm  # pro svislý posun
+        px_per_mm   = px_per_pt_y * pt_per_mm  # svislý posun v mm -> px
 
-        # Okraje pásu a jeho výška
-        left  = int(round(COVER_SIDE_MARGIN_CM * px_per_cm_x))
+        # Geometrie pásu
+        left  = int(round(COVER_SIDE_MARGIN_CM   * px_per_cm_x))
         right = W - left
-        y_top = int(round(COVER_BAND_TOP_CM * px_per_cm_y))        # horní linka pásu
-        y_bot = int(round(COVER_BAND_BOTTOM_CM * px_per_cm_y))     # dolní linka pásu
+        y_top = int(round(COVER_BAND_TOP_CM      * px_per_cm_y))   # horní linka pásu
+        y_bot = int(round(COVER_BAND_BOTTOM_CM   * px_per_cm_y))   # dolní linka pásu
         if y_bot < y_top:
             y_top, y_bot = y_bot, y_top
         band_h = max(1, y_bot - y_top)
 
-        # Pás (linky)
-        line_th = max(1, COVER_LINE_THICKNESS_PT // 2 or 1)
-        draw.line([(left, y_top), (right, y_top)], fill=col, width=line_th)
-        draw.line([(left, y_bot), (right, y_bot)], fill=col, width=line_th)
+        # Tloušťka linek ~ převod pt->px
+        line_px = max(1, int(round(COVER_LINE_THICKNESS_PT * px_per_pt_y)))
+
+        # Linky pásu: horní bílá, spodní v barvě titulku
+        draw.line([(left, y_top), (right, y_top)], fill=col_top,   width=line_px)
+        draw.line([(left, y_bot), (right, y_bot)], fill=col_title, width=line_px)
 
         # Helpery pro text
-        def font_px(size_pt: int):
+        def load_font(size_pt: int):
             try:
                 return ImageFont.truetype(PREVIEW_TTF or "DejaVuSans.ttf", size_pt)
             except Exception:
@@ -98,21 +105,20 @@ class PreviewWorker(QRunnable):
             bbox = draw.textbbox((0, 0), s, font=f)
             return bbox[2] - bbox[0], bbox[3] - bbox[1]
 
-        # Nadpis: wrap + shrink na max 2 řádky, centrování H/V
+        # Nadpis: wrap (max 2 řádky) + auto-shrink + centrování H/V
         title = (self.title.strip() or "CENOVÁ NABÍDKA").upper()
         fs = COVER_TITLE_SIZE_PT
         min_fs = 22
-        leading_factor = 1.12
+        leading = 1.12
         max_w = right - left
 
         def wrap_lines(text: str, fs_pt: int):
-            f = font_px(fs_pt)
+            f = load_font(fs_pt)
             words = text.split()
             lines, cur = [], ""
             for w in words:
                 test = (cur + " " + w).strip()
-                w_test, _ = text_size(test, f)
-                if w_test <= max_w:
+                if text_size(test, f)[0] <= max_w:
                     cur = test
                 else:
                     if cur:
@@ -124,10 +130,9 @@ class PreviewWorker(QRunnable):
 
         lines, f = wrap_lines(title, fs)
         while True:
-            _, hA = text_size("Ag", f)
-            line_h = int(round(hA * leading_factor))
+            _, base_h = text_size("Ag", f)
+            line_h = int(round(base_h * leading))
             widest = max((text_size(L, f)[0] for L in lines), default=0)
-            # podmínky: ≤2 řádky, vejde se na šířku, vejde se do pásu
             if len(lines) <= 2 and widest <= max_w and (len(lines) * line_h) <= band_h:
                 break
             if fs <= min_fs:
@@ -135,28 +140,25 @@ class PreviewWorker(QRunnable):
             fs -= 1
             lines, f = wrap_lines(title, fs)
 
-        _, hA = text_size("Ag", f)
-        line_h = int(round(hA * leading_factor))
+        _, base_h = text_size("Ag", f)
+        line_h  = int(round(base_h * leading))
         total_h = len(lines) * line_h
 
-        # Výchozí svislé centrování mezi linkami
+        # Svislé centrování + jemný posun v mm (kladně = nahoru)
         y = y_top + (band_h - total_h) // 2
+        y -= int(round(COVER_TITLE_OFFSET_MM * px_per_mm))
 
-        # Aplikuj ruční offset v mm (kladná hodnota = posun nahoru)
-        title_offset_px = COVER_TITLE_OFFSET_MM * px_per_mm
-        y -= int(round(title_offset_px))
-
-        # Vykresli řádky (vodorovně centrované v pásu)
+        # Vykreslení řádků (horizontálně centrované)
         for L in lines:
             wL, _ = text_size(L, f)
             x = left + (max_w - wL) // 2
-            draw.text((x, y), L, fill=col, font=f)
+            draw.text((x, y), L, fill=col_title, font=f)
             y += line_h
 
-        # Spodní blok: adresa a nad ní datum
-        info_left   = int(round(COVER_INFO_BLOCK_LEFT_CM * px_per_cm_x))
+        # Spodní blok: adresa + (volitelně) datum nad adresou
+        info_left   = int(round(COVER_INFO_BLOCK_LEFT_CM   * px_per_cm_x))
         info_bottom = int(round(COVER_INFO_BLOCK_BOTTOM_CM * px_per_cm_y))
-        f_info = font_px(COVER_INFO_SIZE_PT)
+        f_info = load_font(COVER_INFO_SIZE_PT)
         _, h_info = text_size("Ag", f_info)
         line_h_info = int(round(h_info * 1.15))
         gap_date = max(4, line_h_info // 3)
@@ -166,14 +168,13 @@ class PreviewWorker(QRunnable):
         y_start = H - info_bottom - total_info_h
         y_run = y_start
         for ln in info_lines:
-            draw.text((info_left, y_run), ln, fill=col, font=f_info)
+            draw.text((info_left, y_run), ln, fill=col_title, font=f_info)
             y_run += line_h_info
 
         if self.use_today:
             date_str = english_date_upper() if self.date_style == "EN" else czech_date()
-            # datum nad blokem adresy
             y_date = y_start - gap_date - (line_h_info - h_info)
-            draw.text((info_left, max(0, int(y_date))), date_str, fill=col, font=f_info)
+            draw.text((info_left, max(0, int(y_date))), date_str, fill=col_title, font=f_info)
 
         return img
 

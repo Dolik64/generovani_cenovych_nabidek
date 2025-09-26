@@ -8,9 +8,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas as pdfcanvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.colors import HexColor
-
-
-from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase import pdfmetrics  # pro ascent/descent
 
 from config import (
     # Rozměry A4 v bodech
@@ -22,12 +20,15 @@ from config import (
     # Titulní strana
     COVER_TITLE_COLOR_HEX, COVER_LINE_THICKNESS_PT, COVER_SIDE_MARGIN_CM,
     COVER_BAND_TOP_CM, COVER_BAND_BOTTOM_CM, COVER_TITLE_SIZE_PT,
-    COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT, COVER_TITLE_OFFSET_MM,
+    COVER_INFO_BLOCK_LEFT_CM, COVER_INFO_BLOCK_BOTTOM_CM, COVER_INFO_SIZE_PT,
+    COVER_TITLE_OFFSET_MM,                          # jemný posun nadpisu v mm ( + nahoru )
+    COVER_TOP_LINE_COLOR_HEX, COVER_BOTTOM_LINE_COLOR_HEX,  # barvy linek pásu
     # Datumové helpery
     czech_date, english_date_upper,
     # Pevná šířka screenshotu ceníku (v cm)
     PRICE_IMAGE_WIDTH_CM,
 )
+
 
 def export_pdf(
     out_path: str,
@@ -42,43 +43,45 @@ def export_pdf(
 ):
     """
     Export PDF:
-      - Titulní strana dle cm-konstant v config.py
-      - Stránky komponent: 4 „dlaždice“ na výšku, edge-to-edge, cover ořez (bez deformace)
-      - Poslední strana: screenshot ceníku s horním odsazením PRICE_TOP_OFFSET_CM
-        a pevnou šířkou PRICE_IMAGE_WIDTH_CM (výška se dopočítá; když by přesáhla,
-        zmenší se šířka/výška úměrně). Obrázek se NEpřevzorkovává – vkládá se
-        v plném rozlišení pro minimální ztráty kvality.
+      - Titulní strana: jen spodní linka je viditelná (horní je bílá), nadpis je centrovaný
+        mezi linkami; jemný posun přes COVER_TITLE_OFFSET_MM.
+      - Stránky komponent: 4 „dlaždice“ na výšku, edge-to-edge, cover ořez (bez deformace).
+      - Poslední strana: screenshot ceníku s horním odsazením PRICE_TOP_OFFSET_CM a pevnou
+        šířkou PRICE_IMAGE_WIDTH_CM (výška se dopočítá). Obrázek se NEpřevzorkovává — vkládá se
+        v plném rozlišení a škáluje se až při vykreslení do PDF.
     """
     c = pdfcanvas.Canvas(out_path, pagesize=A4)
     W, H = A4_W_PT, A4_H_PT  # body (1 pt = 1/72")
     pt_per_cm = 72.0 / 2.54
-    
     pt_per_mm = 72.0 / 25.4
     offset_pt = COVER_TITLE_OFFSET_MM * pt_per_mm  # + nahoru, - dolů
 
-        # === Titulní strana ======================================================
-    col = HexColor(COVER_TITLE_COLOR_HEX)
+    # === Titulní strana ======================================================
+    title_col   = HexColor(COVER_TITLE_COLOR_HEX)
+    line_top    = HexColor(COVER_TOP_LINE_COLOR_HEX)
+    line_bottom = HexColor(COVER_BOTTOM_LINE_COLOR_HEX)
 
     left_pt = COVER_SIDE_MARGIN_CM * pt_per_cm
     right_pt = W - left_pt
-    y_top_pt = H - (COVER_BAND_TOP_CM * pt_per_cm)        # horní linka pásu (vyšší Y)
-    y_bot_pt = H - (COVER_BAND_BOTTOM_CM * pt_per_cm)     # dolní linka pásu (nižší Y)
-    band_h = max(1.0, y_top_pt - y_bot_pt)                # výška pásu
+    y_top_pt = H - (COVER_BAND_TOP_CM * pt_per_cm)        # horní linka pásu (větší Y)
+    y_bot_pt = H - (COVER_BAND_BOTTOM_CM * pt_per_cm)     # dolní linka pásu (menší Y)
+    band_h   = max(1.0, y_top_pt - y_bot_pt)              # výška pásu
 
-    # Linky pásu
-    c.setStrokeColor(col)
+    # Linky pásu (horní na bílo = "neviditelná", spodní v barvě)
     c.setLineWidth(COVER_LINE_THICKNESS_PT)
+    c.setStrokeColor(line_top)
     c.line(left_pt, y_top_pt, right_pt, y_top_pt)
+    c.setStrokeColor(line_bottom)
     c.line(left_pt, y_bot_pt, right_pt, y_bot_pt)
 
-    # --- Nadpis: wrap (max 2 řádky) + auto-shrink + centrování ---
+    # --- Nadpis: wrap (max 2 řádky) + auto-shrink + centrování H/V ---
     title = (title_text.strip() or "CENOVÁ NABÍDKA").upper()
     max_w = right_pt - left_pt
     leading_factor = 1.12
     fs = COVER_TITLE_SIZE_PT
     min_fs = 22
 
-    def wrap_lines(text, fs_pt):
+    def wrap_lines(text: str, fs_pt: float) -> list[str]:
         words = text.split()
         lines, cur = [], ""
         for w in words:
@@ -93,7 +96,7 @@ def export_pdf(
             lines.append(cur)
         return lines
 
-    def block_metrics(fs_pt):
+    def block_metrics(fs_pt: float):
         asc = pdfmetrics.getAscent(FONT_NAME)  * fs_pt / 1000.0
         dsc = abs(pdfmetrics.getDescent(FONT_NAME)) * fs_pt / 1000.0
         line_h = (asc + dsc) * leading_factor
@@ -111,15 +114,15 @@ def export_pdf(
         lines = wrap_lines(title, fs)
         asc, dsc, line_h = block_metrics(fs)
 
-    block_h = len(lines) * line_h
-    top_y = y_bot_pt + (band_h - block_h) / 2.0        # horní okraj bloků textu
-    baseline_y = top_y + asc + offset_pt               # baseline první řádky = top + ascent
+    block_h   = len(lines) * line_h
+    top_y     = y_bot_pt + (band_h - block_h) / 2.0      # horní okraj textového bloku
+    baseline_y = top_y + asc + offset_pt                  # baseline 1. řádku (aplikuje offset)
 
-    c.setFillColor(col)
+    c.setFillColor(title_col)
     for L in lines:
         c.setFont(FONT_NAME, fs)
         line_w = c.stringWidth(L, FONT_NAME, fs)
-        x = left_pt + (max_w - line_w) / 2.0           # horizontální střed pásu
+        x = left_pt + (max_w - line_w) / 2.0             # horizontální střed pásu
         c.drawString(x, baseline_y, L)
         baseline_y += line_h
 
@@ -131,7 +134,10 @@ def export_pdf(
     gap_date = 6
 
     info_lines = [ln for ln in info_lines_text.splitlines() if ln.strip()]
+
+    # adresa (odspodu nahoru s line spacingem)
     y_info = info_y_base
+    c.setFillColor(title_col)
     for ln in info_lines:
         c.setFont(FONT_NAME, fs_info)
         c.drawString(info_x, y_info, ln)
@@ -143,6 +149,7 @@ def export_pdf(
         c.drawString(info_x, y_info + gap_date, date_str)
 
     c.showPage()
+
     # === Komponentové stránky: 4 dlaždice, edge-to-edge, cover ==============
     if order_paths:
         spp = SEGMENTS_PER_PAGE_FIXED  # 4
@@ -172,8 +179,10 @@ def export_pdf(
                 tile = im.crop(box)  # bez resize – ReportLab škáluje při vykreslení
                 img_reader = ImageReader(tile)
                 y_top -= cell_h_pt
-                c.drawImage(img_reader, 0, y_top, width=W, height=cell_h_pt,
-                            preserveAspectRatio=False, mask='auto')
+                c.drawImage(
+                    img_reader, 0, y_top, width=W, height=cell_h_pt,
+                    preserveAspectRatio=False, mask='auto'
+                )
             c.showPage()
 
     # === Cenová stránka: pevná šířka v cm, horní odsazení, bez re-samplingu ==
@@ -214,8 +223,11 @@ def export_pdf(
     img_reader_price = ImageReader(im)
     x = (W - width_pt) / 2
     y = H - top_offset_pt - height_pt
-    c.drawImage(img_reader_price, x, y, width=width_pt, height=height_pt,
-                preserveAspectRatio=False, mask='auto')
+    c.drawImage(
+        img_reader_price, x, y,
+        width=width_pt, height=height_pt,
+        preserveAspectRatio=False, mask='auto'
+    )
 
     c.showPage()
     c.save()
